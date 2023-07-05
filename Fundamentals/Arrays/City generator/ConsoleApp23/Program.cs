@@ -5,28 +5,68 @@ namespace ConsoleApp23
     {
         static void GenerateRoad(bool[,] roads, int startX, int startY, int direction)
         {
-            roads[startX, startY] = true;
-            if (roads[startX, startY] == true)
-            { Console.WriteLine($"#"); }  
-
+            int width = roads.GetLength(0);
+            int height = roads.GetLength(1);
             switch (direction)
             {
-                case 0: //UP
+                case 0: //right
+
+                    for (int x = startX; x < width; x++)
+                    {
+                        roads[x, startY] = true;
+                    }
+                    break;
                 case 1: //down
-                case 2: // left
-                default: // right
+
+                    for (int y = startY; y < height; y++)
+                    {
+                        roads[startX, y] = true;
+                    }
+                    break;
+                case 2: //left
+                    for (int x = startX; x >= 0; x--)
+                    {
+                        roads[x, startY] = true;
+                    }
+                    break;
+                case 3: //up
+                    for (int y = startY; y >= 0; y--)
+                    {
+                        roads[startX, y] = true;
+                    }
                     break;
             }
         }
         static void Main(string[] args)
         {
-            var random = new Random();
-            
+            //Prepare road variables
             int width = 50;
-            int height = 50;
+            int height = 20;
             var roads = new bool[width, height];
 
-            GenerateRoad(roads, 25, 25, 0);
+            //Generate random roads
+            var random = new Random();
+            for (int i = 0; i < 4; i++)
+            {
+                GenerateRoad(roads, random.Next(width), random.Next(height), random.Next(4));
+            }
+
+            //Draw roads
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    if (roads[x, y] == true)
+                    {
+                        Console.Write("#");
+                    }
+                    else
+                    {
+                        Console.Write(".");
+                    }
+                }
+                Console.WriteLine();
+            }
         }
     }
 }
