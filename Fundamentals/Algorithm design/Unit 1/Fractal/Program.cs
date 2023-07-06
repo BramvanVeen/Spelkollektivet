@@ -7,7 +7,6 @@ namespace Fractal
     {
         static void Main(string[] args)
         {
-            
             for (int y = -10; y < 10; y++) 
             {
             for (int x = 1; x < 80; x++)
@@ -29,7 +28,6 @@ namespace Fractal
                     Console.WriteLine("' '");
                 }
                 Console.WriteLine();
-           
             }
 
             /*
