@@ -3,40 +3,51 @@ namespace ConsoleApp23
 {
     internal class Program
     {
-        static void GenerateRoad(bool[,] roads, int startX, int startY, int direction)
+        static void GenerateIntersection(bool[,] roads, int startX, int startY, int direction)
         {
             int width = roads.GetLength(0);
             int height = roads.GetLength(1);
+            var random = new Random();
+            int firstd100 = random.Next(1, 101);
+            int secondd100 = random.Next(1, 101);
+            int thirdd100 = random.Next(1, 101);
+            int fourthd100 = random.Next(1, 101);
+
             switch (direction)
             {
                 case 0: //right
-
-                    for (int x = startX; x < width; x++)
+                    if (firstd100 < 71)
                     {
-                        roads[x, startY] = true;
+                        for (int x = startX; x < width; x++)
+                        {
+                            roads[x, startY] = true;
+                        }
                     }
-                    break;
-                case 1: //down
-
-                    for (int y = startY; y < height; y++)
+                    if (secondd100 < 71)
                     {
-                        roads[startX, y] = true;
+                        for (int y = startY; y < height; y++)
+                        {
+                            roads[startX, y] = true;
+                        }
                     }
-                    break;
-                case 2: //left
-                    for (int x = startX; x >= 0; x--)
+                    if (thirdd100 < 71)
                     {
-                        roads[x, startY] = true;
+                        for (int x = startX; x >= 0; x--)
+                        {
+                            roads[x, startY] = true;
+                        }
                     }
-                    break;
-                case 3: //up
-                    for (int y = startY; y >= 0; y--)
+                    if (fourthd100 < 71)
                     {
-                        roads[startX, y] = true;
+                        for (int y = startY; y >= 0; y--)
+                        {
+                            roads[startX, y] = true;
+                        }
                     }
                     break;
             }
         }
+        
         static void Main(string[] args)
         {
             //Prepare road variables
@@ -46,9 +57,9 @@ namespace ConsoleApp23
 
             //Generate random roads
             var random = new Random();
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 5; i++)
             {
-                GenerateRoad(roads, random.Next(width), random.Next(height), random.Next(4));
+                GenerateIntersection(roads, random.Next(width), random.Next(height), random.Next(1));
             }
 
             //Draw roads
