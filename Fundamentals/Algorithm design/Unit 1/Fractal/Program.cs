@@ -15,9 +15,9 @@ namespace Fractal
                     double i = 0;
                     int k = -1;
 
-                    while (r * r + i * i < 11) (k < 112)
+                    while (r * r + i * i < 11 && k < 112)
                             { 
-                        double t == r;
+                        double t = r;
                         r = t * t - i * i - 2.3 + x / 24.5;
                         i = 2 * t * i + y / 8.5;
                         k++;
