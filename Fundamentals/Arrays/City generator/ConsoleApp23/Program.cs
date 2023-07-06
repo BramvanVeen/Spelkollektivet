@@ -3,7 +3,9 @@ namespace ConsoleApp23
 {
     internal class Program
     {
-        static void GenerateIntersection(bool[,] roads, int startX, int startY, int direction)
+        
+
+        static void GenerateRoad(bool[,] roads, int startX, int startY, int direction)
         {
             int width = roads.GetLength(0);
             int height = roads.GetLength(1);
@@ -12,6 +14,7 @@ namespace ConsoleApp23
             int secondd100 = random.Next(1, 101);
             int thirdd100 = random.Next(1, 101);
             int fourthd100 = random.Next(1, 101);
+
 
             switch (direction)
             {
@@ -46,8 +49,21 @@ namespace ConsoleApp23
                     }
                     break;
             }
+
+
         }
-        
+        static void GenerateIntersection(bool[,] roads, int x, int y)
+        {
+            int width = roads.GetLength(0);
+            int height = roads.GetLength(1);
+            var random = new Random();
+            for (int i = 0; i < 5; i++)
+            {
+                GenerateRoad(roads, random.Next(width), random.Next(height), random.Next(1));
+            }
+        }
+
+
         static void Main(string[] args)
         {
             //Prepare road variables
@@ -55,12 +71,11 @@ namespace ConsoleApp23
             int height = 20;
             var roads = new bool[width, height];
 
-            //Generate random roads
-            var random = new Random();
-            for (int i = 0; i < 5; i++)
-            {
-                GenerateIntersection(roads, random.Next(width), random.Next(height), random.Next(1));
-            }
+            //Generate intersection
+
+
+            GenerateIntersection(roads, 10, 10);
+
 
             //Draw roads
             for (int y = 0; y < height; y++)
