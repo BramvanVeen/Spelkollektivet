@@ -3,79 +3,66 @@ namespace ConsoleApp23
 {
     internal class Program
     {
-        
-
         static void GenerateRoad(bool[,] roads, int startX, int startY, int direction)
         {
             int width = roads.GetLength(0);
             int height = roads.GetLength(1);
-            var random = new Random();
-            int firstd100 = random.Next(1, 101);
-            int secondd100 = random.Next(1, 101);
-            int thirdd100 = random.Next(1, 101);
-            int fourthd100 = random.Next(1, 101);
-
-
             switch (direction)
             {
                 case 0: //right
-                    if (firstd100 < 71)
+
+                    for (int x = startX; x < width; x++)
                     {
-                        for (int x = startX; x < width; x++)
-                        {
-                            roads[x, startY] = true;
-                        }
+                        roads[x, startY] = true;
                     }
-                    if (secondd100 < 71)
+                    break;
+                case 1: //down
+                    for (int y = startY; y < height; y++)
                     {
-                        for (int y = startY; y < height; y++)
-                        {
-                            roads[startX, y] = true;
-                        }
+                        roads[startX, y] = true;
                     }
-                    if (thirdd100 < 71)
+                    break;
+                case 2: //left
+                    for (int x = startX; x >= 0; x--)
                     {
-                        for (int x = startX; x >= 0; x--)
-                        {
-                            roads[x, startY] = true;
-                        }
+                        roads[x, startY] = true;
                     }
-                    if (fourthd100 < 71)
+                    break;
+                case 3: //up
+                    for (int y = startY; y >= 0; y--)
                     {
-                        for (int y = startY; y >= 0; y--)
-                        {
-                            roads[startX, y] = true;
-                        }
+                        roads[startX, y] = true;
                     }
                     break;
             }
 
-
+            
         }
         static void GenerateIntersection(bool[,] roads, int x, int y)
         {
-            int width = roads.GetLength(0);
-            int height = roads.GetLength(1);
-            var random = new Random();
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 4; i++)
             {
-                GenerateRoad(roads, random.Next(width), random.Next(height), random.Next(1));
+                int width = 50;
+                int height = 20;
+                var random = new Random();
+                int possibleRoad = random.Next(1, 101);
+                if (possibleRoad < 71)
+                { GenerateRoad(roads, random.Next(width), random.Next(height), random.Next(4)); }
             }
         }
-
-
         static void Main(string[] args)
         {
             //Prepare road variables
             int width = 50;
             int height = 20;
+            var random = new Random();
             var roads = new bool[width, height];
 
-            //Generate intersection
-
-
-            GenerateIntersection(roads, 10, 10);
-
+            //Generate random intersections
+            for (int i = 0; i < 1; i++)
+            { 
+                GenerateIntersection(roads, random.Next(width), random.Next(height)); 
+            }
 
             //Draw roads
             for (int y = 0; y < height; y++)
