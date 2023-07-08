@@ -10,44 +10,43 @@ namespace ConsoleApp23
             switch (direction)
             {
                 case 0: //right
-
-                    for (int x = startX; x < width; x++)
+                    for (int right = startX; right < width; right++)
                     {
-                        roads[x, startY] = true;
+                        roads[right, startY] = true;
                     }
                     break;
                 case 1: //down
-                    for (int y = startY; y < height; y++)
+                    for (int down = startY; down < height; down++)
                     {
-                        roads[startX, y] = true;
+                        roads[startX, down] = true;
                     }
                     break;
                 case 2: //left
-                    for (int x = startX; x >= 0; x--)
+                    for (int left = startX; left >= 0; left--)
                     {
-                        roads[x, startY] = true;
+                        roads[left, startY] = true;
                     }
                     break;
                 case 3: //up
-                    for (int y = startY; y >= 0; y--)
+                    for (int up = startY; up >= 0; up--)
                     {
-                        roads[startX, y] = true;
+                        roads[startX, up] = true;
                     }
                     break;
             }
-
-            
         }
         static void GenerateIntersection(bool[,] roads, int x, int y)
         {
             for (int i = 0; i < 4; i++)
+                
             {
                 int width = 50;
                 int height = 20;
                 var random = new Random();
+
                 int possibleRoad = random.Next(1, 101);
                 if (possibleRoad < 71)
-                { GenerateRoad(roads, random.Next(width), random.Next(height), random.Next(4)); }
+                { GenerateRoad(roads, x, y, random.Next(4)); }
             }
         }
         static void Main(string[] args)
@@ -55,21 +54,18 @@ namespace ConsoleApp23
             //Prepare road variables
             int width = 50;
             int height = 20;
-            var random = new Random();
             var roads = new bool[width, height];
 
-            //Generate random intersections
-            for (int i = 0; i < 1; i++)
-            { 
-                GenerateIntersection(roads, random.Next(width), random.Next(height)); 
-            }
-
+            //Generate intersections
+            
+                GenerateIntersection(roads, 20, 10); 
+            
             //Draw roads
-            for (int y = 0; y < height; y++)
+            for (int Vertical = 0; Vertical < height; Vertical++)
             {
-                for (int x = 0; x < width; x++)
+                for (int Horizontal = 0; Horizontal < width; Horizontal++)
                 {
-                    if (roads[x, y] == true)
+                    if (roads[Horizontal, Vertical] == true)
                     {
                         Console.Write("#");
                     }
