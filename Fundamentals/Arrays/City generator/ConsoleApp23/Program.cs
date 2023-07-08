@@ -40,13 +40,11 @@ namespace ConsoleApp23
             for (int i = 0; i < 4; i++)
                 
             {
-                int width = 50;
-                int height = 20;
                 var random = new Random();
 
                 int possibleRoad = random.Next(1, 101);
                 if (possibleRoad < 71)
-                { GenerateRoad(roads, x, y, random.Next(4)); }
+                { GenerateRoad(roads, x, y, i); }
             }
         }
         static void Main(string[] args)
@@ -58,7 +56,7 @@ namespace ConsoleApp23
 
             //Generate intersections
             
-                GenerateIntersection(roads, 20, 10); 
+                GenerateIntersection(roads, 2, 2); 
             
             //Draw roads
             for (int Vertical = 0; Vertical < height; Vertical++)
