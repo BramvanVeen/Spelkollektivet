@@ -54,10 +54,10 @@ namespace ConsoleApp23
             int height = 20;
             var roads = new bool[width, height];
             var random = new Random();
-            int intersectionsNumberof = random.Next(10);
+            
 
             //Generate intersections
-            for (intersectionsNumberof = 0; intersectionsNumberof < 10; intersectionsNumberof++)
+            for (int intersectionsNumberof = random.Next(10); intersectionsNumberof < 10; intersectionsNumberof++)
             {
                 GenerateIntersection(roads, random.Next(width), random.Next(height));
             }
