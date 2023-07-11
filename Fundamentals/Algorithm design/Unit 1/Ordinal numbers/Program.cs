@@ -37,7 +37,7 @@ namespace Ordinal_numbers
         }
         static void Main(string[] args)
         {
-            for (int i = 0; i < 20; i++) 
+            for (int i = 0; i < 50; i++) 
             { 
                 Console.WriteLine(OrdinalNumber(i)); 
             }
