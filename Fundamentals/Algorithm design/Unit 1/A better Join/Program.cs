@@ -60,9 +60,7 @@ namespace A_better_Join
                 {
                     break;
                 }
-                people.Reverse();
-                people.Remove(people[0]);
-                people.Reverse();
+                people.RemoveAt(people.Count - 1);
             }
 
 
