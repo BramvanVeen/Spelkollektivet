@@ -9,24 +9,24 @@ namespace Ordinal_numbers
     {
         static string OrdinalNumber(int number)
         {
-            int numberModified = number % 10;
+            int lastDigit = number % 10;
             if (number > 10)
             {
-                int numberModifiedII = number / 10 % 10;
-                if (numberModifiedII == 1)
+                int secondToLastDigit = number / 10 % 10;
+                if (secondToLastDigit == 1)
                 { 
                     return $"{number}th"; 
                 }
             }
-            if (numberModified == 1)
+            if (lastDigit == 1)
             {
                 return $"{number}st";
             }
-            if (numberModified == 2)
+            if (lastDigit == 2)
             {
                 return $"{number}nd";
             }
-            if (numberModified == 3)
+            if (lastDigit == 3)
             { 
                 return $"{number}rd"; 
             }
