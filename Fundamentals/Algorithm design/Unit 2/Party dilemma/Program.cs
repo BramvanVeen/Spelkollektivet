@@ -19,7 +19,12 @@ namespace Party_dilemma
 
         public static void Main(string[] args)
         {
-            Console.WriteLine(Factorial(5));  
+            for (int i = 0; i < 10; i++)
+            {
+                Console.WriteLine(Factorial(i));
+            }
+                            
+              
         }
     }
 }
