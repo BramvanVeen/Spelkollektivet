@@ -8,10 +8,12 @@ namespace Adventure_map
         static Random random = new Random();
 
         char[] forest = { 'T', '@', '(', ')', '!', '%', '*' };
-        //char forestSymbol = random.Next (forest);
+        char forestSymbol = random.Next (forest);
 
         char[] border = { '-', '+', '|', };
-
+        char borderHorizontal = border[0];
+        char borderVertical = border[2];
+        char borderCorner = border[1];
 
         char[] River = { '/', '|', '╲' };
         char[] Road = { '*' };
@@ -21,6 +23,57 @@ namespace Adventure_map
         //In this order (order doesnt matter maybe for methods)
         /*Method to determine if a bridge symbol should be placed in the grid*/
         /*Method for borders*/
+
+        static void generateBorder(bool[,] border, int width, int height, int direction)
+        {
+            switch (borderPlacement)
+            {
+                case 0: //leftcornerup  
+                    {
+                        borderCornerLeftsideTop[height/height-1, width/width-1] = true;
+                    }
+                    break;
+                case 1: //leftcornerbottom
+                    {
+                        borderCornerLeftsideBottom[height, width / width - 1] = true;
+                    }
+                    break;
+                case 2: //rightcornerup
+                    {
+                        borderCornerRightsideTop[height / height - 1, width] = true;
+                    }
+                    break;
+                case 3: //rightcornerbottom
+                    {
+                        borderCornerRightsideBottom[height, width] = true;
+                    }
+                    break;
+                case 4: //tophorizontal
+                    for (int i = width/width; i < width-1; i++)
+                    {
+                        borderhorizontalTop[,] = true;
+                    }
+                    break;
+                case 5: //bottomhorizontal
+                    for (int i = width/width; i < width-1; i++)
+                    {
+                        borderhorizontalBottom[startX, up] = true;
+                    }
+                    break;
+                case 6: //leftvertical
+                    for (int i = height / height; i < height - 1; i++) 
+                    {
+                        borderLeftVertical[startX, up] = true;
+                    }
+                    break;
+                case 7: //rightvertical
+                    for (int i = height / height; i < height - 1; i++)
+                    {
+                        borderRightVertical[startX, up] = true;
+                    }
+                    break;
+            }
+        }
         /*Method for bridge*/
         /*Method for titel*/
 
