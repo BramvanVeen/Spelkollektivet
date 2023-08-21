@@ -7,28 +7,40 @@ namespace Adventure_map
     {
         static Random random = new Random();
 
-        string[] Forest = { "T", "@", "(", ")", "!", "%", "*" };
-        string[] River = { "/", "|", "╲" };
-        string[] Road = { "*" };
-        string[] Bridge = { "=" };
-        string[] Empty = { " " };
+        char[] forest = { 'T', '@', '(', ')', '!', '%', '*' };
+        //char forestSymbol = random.Next (forest);
+
+        char[] border = { '-', '+', '|', };
+
+
+        char[] River = { '/', '|', '╲' };
+        char[] Road = { '*' };
+        char[] Bridge = { '=' };
+        char[] Empty = { ' ' };
 
         //In this order (order doesnt matter maybe for methods)
         /*Method to determine if a bridge symbol should be placed in the grid*/
         /*Method for borders*/
+        /*Method for bridge*/
+        /*Method for titel*/
+
+
         /*Method for road*/
         /*Method for River*/
         /*Method for extra road*/
+
+
         /*Method for Forest*/
 
         static void Map(int width, int height)
         {
             int horizontal = width;
             int vertical = height;
-            int[,] grid = new int[horizontal, vertical];
+
+            char[,] grid = new char[horizontal, vertical];
 
             int mapQuarter = width / 4;
-            int bridgeStart = mapQuarter * 3;
+            int bridgeStart = width * 3 / 4;
 
             // //Drawing the map to console with all of the preperation from earlier, going line by line and layer by layer
             for (int y = 0; y < height; y++)
