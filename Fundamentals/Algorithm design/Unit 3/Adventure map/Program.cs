@@ -27,6 +27,9 @@ namespace Adventure_map
             int vertical = height;
             int[,] grid = new int[horizontal, vertical];
 
+            int mapQuarter = width / 4;
+            int bridgeStart = mapQuarter * 3;
+
             // //Drawing the map to console with all of the preperation from earlier, going line by line and layer by layer
             for (int y = 0; y < height; y++)
             {
