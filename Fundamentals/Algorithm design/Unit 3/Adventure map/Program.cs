@@ -6,63 +6,58 @@ namespace Adventure_map
     internal class Program
     {
         static Random random = new Random();
+
+        string[] Forest = { "T", "@", "(", ")", "!", "%", "*" };
+        string[] River = { "/", "|", "╲" };
+        string[] Road = { "*" };
+        string[] Bridge = { "=" };
+        string[] Empty = { " " };
+
+        //In this order (order doesnt matter maybe for methods)
+        /*Method to determine if a bridge symbol should be placed in the grid*/
+        /*Method for borders*/
+        /*Method for road*/
+        /*Method for River*/
+        /*Method for extra road*/
+        /*Method for Forest*/
+
         static void Map(int width, int height)
         {
-            int kwart = width / 4;
-            int driekwart = kwart * 3;
-            int bridgestartingpoint = random.Next(driekwart, width - 1);
+            int horizontal = width;
+            int vertical = height;
+            int[,] grid = new int[horizontal, vertical];
 
             // //Drawing the map to console with all of the preperation from earlier, going line by line and layer by layer
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
-                    // Decide which character to write and write it.
-
-                    //This is the border: (Top)
-                    //Will always be the same
-                    if (x == 0  && y == 0)
+                    /*switch (location on map)
                     {
-                        Console.Write("+");
-                    }
-                    if (x > 0 && y == 0)
-                    {
-                        Console.Write("-");
-                    }
-                    if (x == width - 1 && y == 0)
-                    {
-                        Console.WriteLine("+");
-                    }
-
-                    //This is the last line (Like the first it will always be the same.
-                    if (x == 0 && y == height - 1)
-                    {
-                        Console.Write("+");
-                    }
-                    if (x > 0 && y == height - 1)
-                    {
-                        Console.Write("-");
-                    }
-                    if (x == width - 1 && y == height - 1)
-                    {
-                        Console.WriteLine("+");
-                    }
-
-                    //I need to figure out a way for every other line to begin and end with:｜ 
-                    //Next is to place a bridge
-                    //Decide where the quarters of the maps are. Divide the width by four, get a kwart result
-                    //1 kwart is forest
-                    //3 * kwart width is where possibly the bridge starts 
-
-                    //Lets try to randomly generate a bridge somewhere:
-
-                    
-                    {
-                        //Console.WriteLine("=");
-                    }
+                        case 0: River
+                                code block (Maybe it's own method?) 
+                                (Then if river is true for that position, place the correct symbol)
+                                break;
+                        case 1: Forest
+                                code block (If Forest is true for that position, place the correct symbol)
+                                break;    
+                        case 3: Road 
+                                code block (If Road is true for that position, place the correct symbol)
+                                break;
+                        case 4: Bridge
+                                code block (If Bridge is true for that position, place the correct symbol)
+                                break;
+                        case 5: Border
+                                code block (If Border is true for that position, place the correct symbol)
+                                break;
+                        default: Empty
+                            code block(If Empty is true for that position, consolewriteline" ";)
+                            break;*/
+    }
 
 
-                }
+
+}
                 Console.WriteLine();
             }
 
@@ -72,6 +67,6 @@ namespace Adventure_map
             //Calling the map method with sizes, first for width, second for height. 
             Map(20, 10);
         }
-        
+
     }
 }
