@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>Adventure_map</RootNamespace>
+    <StartupObject>Adventure_map.Program</StartupObject>
   </PropertyGroup>
 
 </Project>
