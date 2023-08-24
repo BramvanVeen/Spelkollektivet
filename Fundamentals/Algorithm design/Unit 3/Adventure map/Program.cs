@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.Net.Http.Headers;
+using System.Runtime.Serialization;
 
 namespace Adventure_map
 {
@@ -57,8 +58,17 @@ namespace Adventure_map
 
             //Prepare the Bridge:
             int bridgeStartx = width * 3 / 4;
-            int markerPointOne = bridgeStartx;
-            var bridgeStarty = random.Next(7, height - 7);
+            int markerPointx = bridgeStartx-1;
+            int bridgeStarty = random.Next(7, height - 7);
+            int markerPointy = bridgeStarty + 1;
+            int secondMarkerPointxForRoadGoingRight = markerPointx + 5;
+            int secondMarkerPointyForRoadGoingRight = markerPointy;
+
+            int riverMarkerx = bridgeStartx + 2;
+            int rivertMarkery = bridgeStarty + 3;
+            int secondRiverMarkerx = bridgeStartx + 2;
+            int secondRiverMarkery = bridgeStarty - 3;
+
 
             grid[bridgeStartx, bridgeStarty + 1] = '#';
             grid[bridgeStartx + 1, bridgeStarty + 1] = '#';
@@ -77,107 +87,82 @@ namespace Adventure_map
                 bridgeStartx++;
             }
 
-
-            //Prepare the Road:
-            //The road starts left of the bridge
-            char nw = roadMarker[- 1, - 1];
-            
-            /*char gridnw = x - 1, y -1
-                '#';
-            is current location x - 1, y - 1
-
-
-
-
-            w is current location x - 1, y
-            sw is current location x - 1, y + 1
-            n is current location x, y - 1
-            ne is current location x + 1, y - 1
-            e is current location x + 1, y
-            se is current location x + 1, y + 1
-            s is current location x, y + 1*/
-
-
-            string[] direction = new string[] { "nw", "w", "sw" };
-            string nw = '#';
-
-            char roadMarker = grid[markerPointOne-1, bridgeStarty + 1];
-
-            for (int i = 0; i < markerPointOne-2; i++)
+            //Road going Left
+            while (markerPointx>0)
             {
-                roadMarker = '#';
-
-                char nw = roadMarker[-1, -1];
-
-                direction = random.Next(0, 2);
-
+                grid[markerPointx, markerPointy] = '#';
+                markerPointy += random.Next(0, 3) - 1;
+                markerPointx--;
             }
-
-            /*
-            How to determine where to jump?
-            For: the amount of jumps to be made: bridgeStartx -1 or 2 or something..?
-
-            Determine current location! Markers(Road Markers
-            char roadMarkerOne = [bridgeStartx, bridgeStarty+1];
-
-            Random jump to the left:
-
-            For loop..
-
-            {grid[currentLocation] = '#';
-
-            random.Next nw w sw.. pull this randomly from an array?
-            char[] directionPossibilities = new char[northWest, west, southWest];
-            direction = random.Next[directionPossibilities];
-
-            Then determine new current location (because choosing w or sw did something to x and y..
-            }
-
-
-            some sort of compass???
-            nw n ne
-            w     e
-            sw s se
-
-            nw is current location x-1, y-1
-            w  is current location x-1, y
-            sw is current location x-1, y+1
-            n  is current location x, y-1
-            ne is current location x+1, y-1
-            e  is current location x+1, y
-            se is current location x+1, y+1
-            s  is current location x, y+1
-
-            sneaky start with road since road is always going over bridge..
-            grid[bridgeStartx, bridgeStarty + 1] = '#';
-            grid[bridgeStartx + 1, bridgeStarty + 1] = '#';
-            grid[bridgeStartx + 2, bridgeStarty + 1] = '#';
-            grid[bridgeStartx + 3, bridgeStarty + 1] = '#';
-            grid[bridgeStartx + 4, bridgeStarty + 1] = '#';
-
-
-            int roadGoingLeft = width - bridgeStartx - 1;
-            for (int i = 1; i < width-10; i++)
+            //Road going right
+            while (secondMarkerPointxForRoadGoingRight<width-1)
             {
-                int leftOrRight = random.Next(bridgeStarty, bridgeStarty + 2);
-                grid[bridgeStartx -1, leftOrRight] = '#';
-                bridgeStartx--;
-            }*/
-
-
-
-
-
+                grid[secondMarkerPointxForRoadGoingRight, secondMarkerPointyForRoadGoingRight] = '#';
+                secondMarkerPointyForRoadGoingRight += random.Next(0, 3) -1;
+                secondMarkerPointxForRoadGoingRight++;
+            }
+            //River flowing down
+            while (rivertMarkery < height-1)
+            {
+                int directionModifier = random.Next(0, 3) - 1;
+                if (directionModifier < 0)
+                {
+                    grid[riverMarkerx, rivertMarkery] = '/';
+                    grid[riverMarkerx-1, rivertMarkery] = '/';
+                    grid[riverMarkerx+1, rivertMarkery] = '/';
+                }
+                else if (directionModifier > 0)
+                {
+                    grid[riverMarkerx, rivertMarkery] = '\\';
+                    grid[riverMarkerx-1, rivertMarkery] = '\\';
+                    grid[riverMarkerx+1, rivertMarkery] = '\\';
+                }
+                else
+                { 
+                    grid[riverMarkerx, rivertMarkery] = '|';
+                    grid[riverMarkerx-1, rivertMarkery] = '|';
+                    grid[riverMarkerx+1, rivertMarkery] = '|';
+                }
+                
+                riverMarkerx = riverMarkerx + directionModifier;
+                rivertMarkery++;
+            }
+            //River flowing up
+            while (secondRiverMarkery > 1)
+            {
+                int directionModifier = random.Next(0, 3) - 1;
+                if (directionModifier < 0)
+                {
+                    grid[secondRiverMarkerx, secondRiverMarkery] = '/';
+                    grid[secondRiverMarkerx - 1, secondRiverMarkery] = '/';
+                    grid[secondRiverMarkerx + 1, secondRiverMarkery] = '/';
+                }
+                else if (directionModifier > 0)
+                {
+                    grid[secondRiverMarkerx, secondRiverMarkery] = '\\';
+                    grid[secondRiverMarkerx - 1, secondRiverMarkery] = '\\';
+                    grid[secondRiverMarkerx + 1, secondRiverMarkery] = '\\';
+                }
+                else
+                {
+                    grid[secondRiverMarkerx, secondRiverMarkery] = '|';
+                    grid[secondRiverMarkerx - 1, secondRiverMarkery] = '|';
+                    grid[secondRiverMarkerx + 1, secondRiverMarkery] = '|';
+                }
+                secondRiverMarkerx = secondRiverMarkerx + directionModifier;
+                rivertMarkery--;
+            }
             //Drawing the map to console with all of the preperation from earlier, going line by line and layer by layer
             for (int y = 0; y < height; y++)
+
             {
                 for (int x = 0; x < width; x++)
                 {
+                    
                     if (grid[x, y] == '\0')
                     {
                         Console.Write(" ");
                     }
-
                     Console.Write(grid[x, y]);
                     if (x == width - 1)
                     {
