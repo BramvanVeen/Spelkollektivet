@@ -1,4 +1,6 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.Net.Http.Headers;
 
 namespace Adventure_map
 {
@@ -55,7 +57,14 @@ namespace Adventure_map
 
             //Prepare the Bridge:
             int bridgeStartx = width * 3 / 4;
+            int markerPointOne = bridgeStartx;
             var bridgeStarty = random.Next(7, height - 7);
+
+            grid[bridgeStartx, bridgeStarty + 1] = '#';
+            grid[bridgeStartx + 1, bridgeStarty + 1] = '#';
+            grid[bridgeStartx + 2, bridgeStarty + 1] = '#';
+            grid[bridgeStartx + 3, bridgeStarty + 1] = '#';
+            grid[bridgeStartx + 4, bridgeStarty + 1] = '#';
 
             for (int y = 0; y < 5; y++)
             { 
@@ -68,13 +77,48 @@ namespace Adventure_map
                 bridgeStartx++;
             }
 
-            /*//Prepare the Road:
+
+            //Prepare the Road:
+            //The road starts left of the bridge
+            char nw = roadMarker[- 1, - 1];
             
+            /*char gridnw = x - 1, y -1
+                '#';
+            is current location x - 1, y - 1
+
+
+
+
+            w is current location x - 1, y
+            sw is current location x - 1, y + 1
+            n is current location x, y - 1
+            ne is current location x + 1, y - 1
+            e is current location x + 1, y
+            se is current location x + 1, y + 1
+            s is current location x, y + 1*/
+
+
+            string[] direction = new string[] { "nw", "w", "sw" };
+            string nw = '#';
+
+            char roadMarker = grid[markerPointOne-1, bridgeStarty + 1];
+
+            for (int i = 0; i < markerPointOne-2; i++)
+            {
+                roadMarker = '#';
+
+                char nw = roadMarker[-1, -1];
+
+                direction = random.Next(0, 2);
+
+            }
+
+            /*
             How to determine where to jump?
             For: the amount of jumps to be made: bridgeStartx -1 or 2 or something..?
 
-            Determine current location!
-            char currentLocation = [bridgeStartx-1, bridgeStarty+1];
+            Determine current location! Markers(Road Markers
+            char roadMarkerOne = [bridgeStartx, bridgeStarty+1];
 
             Random jump to the left:
 
