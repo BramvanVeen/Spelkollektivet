@@ -24,6 +24,11 @@ namespace Adventure_map
                     Console.ForegroundColor = ConsoleColor.Green;
                     int forestSymbolIndex = random.Next(forestSymbols.Length);
                     grid[x, y] = forestSymbols[forestSymbolIndex];
+
+                    string forestSymbolString = new string(forestSymbols);
+                    forestSymbolString.Remove(0);
+                    char[] forestSymbols2 = new char(forestSymbolString);
+
                 }
             }
 
