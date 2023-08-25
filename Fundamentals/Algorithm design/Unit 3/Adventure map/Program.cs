@@ -15,22 +15,52 @@ namespace Adventure_map
             char[,] grid = new char[width, height];
 
             //Prepare the forest
-            char[] forestSymbols = { 'T', '@', '(', ')', '!', '%', '*', ' ', ' ', ' ' };
+            char[] forestSymbols = { 'T', '@', '(', ')', '!', '%', '*' };
             int mapQuarter = width / 4;
+            int quarterQuarter = mapQuarter / 4;
+            int doubleQuarterQuarter = quarterQuarter * 2;
+            int threeQuarterQuarter = quarterQuarter * 3;
+            
             for (int y = 0; y < height; y++)
             {
                 for (int x = 1; x < mapQuarter - 1; x++)
                 {
                     Console.ForegroundColor = ConsoleColor.Green;
-                    int forestSymbolIndex = random.Next(forestSymbols.Length);
-                    grid[x, y] = forestSymbols[forestSymbolIndex];
+                    int randomForestSymbol = random.Next(0, 10);
+                    if (randomForestSymbol > 1 && x < quarterQuarter)
+                    {
+                        int forestSymbolIndex = random.Next(forestSymbols.Length);
+                        grid[x, y] = forestSymbols[forestSymbolIndex];
+                    }
+                    else if (randomForestSymbol > 2 && x < doubleQuarterQuarter && x< quarterQuarter)
+                    {
+                        int forestSymbolIndex = random.Next(forestSymbols.Length);
+                        grid[x, y] = forestSymbols[forestSymbolIndex];
+                    }
+                    else if (randomForestSymbol > 3 && x < threeQuarterQuarter && x < doubleQuarterQuarter)
+                    {
+                        int forestSymbolIndex = random.Next(forestSymbols.Length);
+                        grid[x, y] = forestSymbols[forestSymbolIndex];
+                    }
+                    else if (randomForestSymbol > 6 && x < mapQuarter && x < threeQuarterQuarter)
+                    {
+                        int forestSymbolIndex = random.Next(forestSymbols.Length);
+                        grid[x, y] = forestSymbols[forestSymbolIndex];
+                    }
+                    continue;
 
-                    string forestSymbolString = new string(forestSymbols);
-                    forestSymbolString.Remove(0);
-                    char[] forestSymbols2 = new char(forestSymbolString);
+
+                    /*else (randomForestSymbol > 2)
+                    {
+                        int forestSymbolIndex = random.Next(forestSymbols.Length);
+                        grid[x, y] = forestSymbols[forestSymbolIndex];
+                    }*/
+
 
                 }
             }
+
+           
 
             //Prepare the border
             grid[0, 0] = '+';
@@ -50,8 +80,8 @@ namespace Adventure_map
             }
 
             //Prepare the Title:
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            grid[width / 2 - 6, 1] =  'A';
+            
+            grid[width / 2 - 6, 1] = 'A';
             grid[width / 2 - 5, 1] = 'D';
             grid[width / 2 - 4, 1] = 'V';
             grid[width / 2 - 3, 1] = 'E';
@@ -78,7 +108,7 @@ namespace Adventure_map
             int secondRiverMarkery = bridgeStarty - 1;
             int sideRoadMarkerx = markerPointx;
             int sideRoadMarkery = markerPointy + 1;
-            Console.ForegroundColor = ConsoleColor.Red;
+           
             grid[bridgeStartx, bridgeStarty + 1] = '#';
             grid[bridgeStartx + 1, bridgeStarty + 1] = '#';
             grid[bridgeStartx + 2, bridgeStarty + 1] = '#';
@@ -136,7 +166,6 @@ namespace Adventure_map
                     grid[riverMarkerx + 1, rivertMarkery] = '|';
                     grid[riverMarkerx - 3, rivertMarkery] = '#';
                 }
-
                 riverMarkerx = riverMarkerx + directionModifier;
                 rivertMarkery++;
             }
@@ -168,12 +197,9 @@ namespace Adventure_map
 
             //Drawing the map to console with all of the preperation from earlier, going line by line and layer by layer
             for (int y = 0; y < height; y++)
-
             {
                 for (int x = 0; x < width; x++)
                 {
-
-
                     if (grid[x, y] == '\0')
                     {
                         Console.Write(" ");
