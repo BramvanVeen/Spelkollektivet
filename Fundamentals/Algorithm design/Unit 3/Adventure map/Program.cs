@@ -1,15 +1,18 @@
-﻿using System;
+﻿using Microsoft.VisualBasic;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Drawing;
 using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
+using System.Threading.Tasks.Dataflow;
 
 namespace Adventure_map
 {
 
     public class Program
     {
+
         static void Map(int width, int height)
         {
             Random random = new Random();
@@ -17,6 +20,12 @@ namespace Adventure_map
             //Declare grid data structure
             char[,] grid = new char[width, height];
             ConsoleColor[,] gridColor = new ConsoleColor[width, height];
+
+            void SetGridCharAndColor(char symbol, ConsoleColor color, int x, int y)
+            {
+                grid[x, y] = symbol;
+                gridColor[x, y] = color;
+            }
 
             //Prepare the Bridge and subsequent markerpoints:
             int bridgeStartx = width * 3 / 4;
@@ -32,88 +41,93 @@ namespace Adventure_map
             int sideRoadMarkerx = markerPointx;
             int sideRoadMarkery = markerPointy + 1;
 
-            void SetGridCharAndColor(char symbol, ConsoleColor color, int x, int y)
-            {
-                grid[x, y] = symbol;
-                gridColor[x, y] = color;
-            }
 
-            //Wondering if there's a way to put one method into the other for properties
-            /*void SnakeLeft(SetGridCharAndColor)
-            {
 
-            }*/
-
-            void SnakeLeft(int x, int y, ConsoleColor color, char symbol)
+            void Snake(int x, int y, ConsoleColor color, char symbol, string direction, string type)
             {
-                while (x > 1)
                 {
-                    y += random.Next(0, 3) - 1;
-                    x--;
                     grid[x, y] = symbol;
                     gridColor[x, y] = color;
-                    if (y == height - 2)
-                        break;
-                    if (y == 1)
-                        break;
                 }
-            }
-
-            void SnakeRight(int x, int y, ConsoleColor color, char symbol)
-            {
-                while (x < width - 1)
+                while (true)
                 {
-                    y += random.Next(0, 3) - 1;
-                    x++;
-                    grid[x, y] = symbol;
-                    gridColor[x, y] = color;
-                    if (y == height - 2)
-                        break;
-                    if (y == 1)
-                        break;
-                    if (x == width - 2)
-                        break;
-                }
-            }
 
-            //Not working for some reason. 
-            /*void SnakeUp(int x, int y, ConsoleColor color, char symbol)
-            {
-                while (y > 1)
-                {
-                    int directionModifier2 = random.Next(0, 3) - 1;
-                    x = +directionModifier2;
-                    y--;
-                    grid[x, y] = symbol;
-                    gridColor[x, y] = color;
-                    if (directionModifier2 > 0)
+                    if ((direction == "left" || direction == "right") && (x > 1 && x < width - 2))
                     {
-                        symbol = '/';
+                        y += random.Next(0, 3) - 1;
+                        if (direction == "left")
+                        {
+                            x--;
+                        }
+                        else if (direction == "right")
+                        {
+                            x++;
+                        }
                     }
-                    else if (directionModifier2 < 0)
+                    else if ((direction == "up" || direction == "down") && (y > 1 && y < height - 2))
                     {
-                        symbol = '\\';
+                        int directionModifier = random.Next(0, 3) - 1;
+                        x += directionModifier;
+
+                        if (direction == "up")
+                        {
+                            y--;
+                        }
+                        else if (direction == "down")
+                        {
+                            y++;
+                        }
                     }
                     else
                     {
-                        symbol = '|';
+                        break;
                     }
-                    if (y == 2)
-                        break;
-                    if (x == width - 2)
-                        break;
-                    if (x == 2)
-                        break;
-                }
-            }*/
 
-            void SnakeDown(int x, int y, ConsoleColor color, char symbol)
-            { 
-            
+                    if (type == "road")
+                    {
+                        SetGridCharAndColor('#', ConsoleColor.Magenta, x, y);
+
+                    }
+                    else if (type == "river")
+                    {
+                        SetGridCharAndColor('|', ConsoleColor.Blue, x, y);
+
+                        if (directionModifier > 0)
+                        {
+                            grid[x - 1, y] = '/';
+                            gridColor[x - 1, y] = color;
+                            grid[x + 1, y] = '/';
+                            gridColor[x + 1, y] = color;
+                        }
+                        else if (directionModifier < 0)
+                        {
+                            grid[x - 1, y] = '\\';
+                            gridColor[x - 1, y] = color;
+                            grid[x + 1, y] = '\\';
+                            gridColor[x + 1, y] = color;
+                        }
+                        else
+                        {
+                            grid[x - 1, y] = '|';
+                            gridColor[x - 1, y] = color;
+                            grid[x + 1, y] = '|';
+                            gridColor[x + 1, y] = color;
+                        }
+                    }
+                    else if (type == "wall")
+                    {
+                        SetGridCharAndColor('|', ConsoleColor.Gray, x, y);
+                    }
+
+                    if ((direction == "up" || direction == "down" || direction == "left" || direction == "right") &&
+                       ((y == 1 || y == height - 2) || (x == 1 || x == width - 2)))
+                    {
+                        break;
+                    }
+                }
             }
 
             //Prepare the forest
-
             char[] forestSymbols = { 'T', '@', '(', ')', '!', '%', '*' };
             int mapQuarter = width / 4;
             int quarterQuarter = mapQuarter / 4;
@@ -125,47 +139,24 @@ namespace Adventure_map
                 for (int x = 1; x < mapQuarter - 1; x++)
                 {
                     int randomForestSymbol = random.Next(0, 10);
-                    if (randomForestSymbol > 1 && x < quarterQuarter)
+
+                    if ((randomForestSymbol > 1 && x < quarterQuarter) ||
+                        (randomForestSymbol > 2 && x < doubleQuarterQuarter && x < quarterQuarter) ||
+                        (randomForestSymbol > 3 && x < threeQuarterQuarter && x < doubleQuarterQuarter) ||
+                        (randomForestSymbol > 6 && x < mapQuarter && x < threeQuarterQuarter))
                     {
                         int forestSymbolIndex = random.Next(forestSymbols.Length);
                         grid[x, y] = forestSymbols[forestSymbolIndex];
                         gridColor[x, y] = ConsoleColor.Green;
                     }
-                    else if (randomForestSymbol > 2 && x < doubleQuarterQuarter && x < quarterQuarter)
-                    {
-                        int forestSymbolIndex = random.Next(forestSymbols.Length);
-                        grid[x, y] = forestSymbols[forestSymbolIndex];
-                        gridColor[x, y] = ConsoleColor.Green;
-                    }
-                    else if (randomForestSymbol > 3 && x < threeQuarterQuarter && x < doubleQuarterQuarter)
-                    {
-                        int forestSymbolIndex = random.Next(forestSymbols.Length);
-                        grid[x, y] = forestSymbols[forestSymbolIndex];
-                        gridColor[x, y] = ConsoleColor.Green;
-                    }
-                    else if (randomForestSymbol > 6 && x < mapQuarter && x < threeQuarterQuarter)
-                    {
-                        int forestSymbolIndex = random.Next(forestSymbols.Length);
-                        grid[x, y] = forestSymbols[forestSymbolIndex];
-                        gridColor[x, y] = ConsoleColor.Green;
-                    }
-                    continue;
-                    /*else (randomForestSymbol > 2)
-                    {
-                        int forestSymbolIndex = random.Next(forestSymbols.Length);
-                        grid[x, y] = forestSymbols[forestSymbolIndex];
-                    }*/
                 }
             }
 
-            //Prepare the border
-
+            //Prepare the border:
             SetGridCharAndColor('+', ConsoleColor.Yellow, 0, 0);
             SetGridCharAndColor('+', ConsoleColor.Yellow, 0, height - 1);
             SetGridCharAndColor('+', ConsoleColor.Yellow, width - 1, 0);
             SetGridCharAndColor('+', ConsoleColor.Yellow, width - 1, height - 1);
-
-
             for (int x = 1; x < width - 1; x++)
             {
                 SetGridCharAndColor('-', ConsoleColor.Yellow, x, 0);
@@ -178,33 +169,14 @@ namespace Adventure_map
             }
 
             //Prepare the Title:
+            string title = "ADVENTURE MAP";
+            int titleX = width / 2 - title.Length / 2;
 
-            grid[width / 2 - 6, 1] = 'A';
-            gridColor[width / 2 - 6, 1] = ConsoleColor.Red;
-            grid[width / 2 - 5, 1] = 'D';
-            gridColor[width / 2 - 5, 1] = ConsoleColor.Red;
-            grid[width / 2 - 4, 1] = 'V';
-            gridColor[width / 2 - 4, 1] = ConsoleColor.Red;
-            grid[width / 2 - 3, 1] = 'E';
-            gridColor[width / 2 - 3, 1] = ConsoleColor.Red;
-            grid[width / 2 - 2, 1] = 'N';
-            gridColor[width / 2 - 2, 1] = ConsoleColor.Red;
-            grid[width / 2 - 1, 1] = 'T';
-            gridColor[width / 2 - 1, 1] = ConsoleColor.Red;
-            grid[width / 2, 1] = 'U';
-            gridColor[width / 2, 1] = ConsoleColor.Red;
-            grid[width / 2 + 1, 1] = 'R';
-            gridColor[width / 2 + 1, 1] = ConsoleColor.Red;
-            grid[width / 2 + 2, 1] = 'E';
-            gridColor[width / 2 + 2, 1] = ConsoleColor.Red;
-            grid[width / 2 + 3, 1] = ' ';
-            gridColor[width / 2 + 3, 1] = ConsoleColor.Red;
-            grid[width / 2 + 4, 1] = 'M';
-            gridColor[width / 2 + 4, 1] = ConsoleColor.Red;
-            grid[width / 2 + 5, 1] = 'A';
-            gridColor[width / 2 + 5, 1] = ConsoleColor.Red;
-            grid[width / 2 + 6, 1] = 'P';
-            gridColor[width / 2 + 6, 1] = ConsoleColor.Red;
+            for (int i = 0; i < title.Length; i++)
+            {
+                grid[titleX + i, 1] = title[i];
+                gridColor[titleX + i, 1] = ConsoleColor.Red;
+            }
 
             //Road on bridge
             for (int i = 0; i < 5; i++)
@@ -232,60 +204,13 @@ namespace Adventure_map
             }
 
             //Road going Left
-            SnakeLeft(markerPointx, markerPointy, ConsoleColor.Magenta, '#');
-
+            Snake(markerPointx, markerPointy, ConsoleColor.Magenta, '#', "left", "road");
             //Road going right
-            SnakeRight(secondMarkerPointxForRoadGoingRight, secondMarkerPointyForRoadGoingRight, ConsoleColor.Magenta, '#');
-
-
+            Snake(secondMarkerPointxForRoadGoingRight, secondMarkerPointyForRoadGoingRight, ConsoleColor.Magenta, '#', "right", "road");
             //River flowing down
-            while (rivertMarkery < height - 1)
-            {
-                int directionModifier = random.Next(0, 3) - 1;
-                if (directionModifier < 0)
-                {
-                    grid[riverMarkerx, rivertMarkery] = '/';
-                    gridColor[riverMarkerx, rivertMarkery] = ConsoleColor.Blue;
-                    grid[riverMarkerx - 1, rivertMarkery] = '/';
-                    gridColor[riverMarkerx - 1, rivertMarkery] = ConsoleColor.Blue;
-                    grid[riverMarkerx + 1, rivertMarkery] = '/';
-                    gridColor[riverMarkerx + 1, rivertMarkery] = ConsoleColor.Blue;
-                    grid[riverMarkerx - 3, rivertMarkery] = '#';
-                    gridColor[riverMarkerx - 3, rivertMarkery] = ConsoleColor.Magenta;
-                }
-                else if (directionModifier > 0)
-                {
-                    grid[riverMarkerx, rivertMarkery] = '\\';
-                    gridColor[riverMarkerx, rivertMarkery] = ConsoleColor.Blue;
-                    grid[riverMarkerx - 1, rivertMarkery] = '\\';
-                    gridColor[riverMarkerx - 1, rivertMarkery] = ConsoleColor.Blue;
-                    grid[riverMarkerx + 1, rivertMarkery] = '\\';
-                    gridColor[riverMarkerx + 1, rivertMarkery] = ConsoleColor.Blue;
-                    grid[riverMarkerx - 3, rivertMarkery] = '#';
-                    gridColor[riverMarkerx - 3, rivertMarkery] = ConsoleColor.Magenta;
-                }
-                else
-                {
-                    grid[riverMarkerx, rivertMarkery] = '|';
-                    gridColor[riverMarkerx, rivertMarkery] = ConsoleColor.Blue;
-                    grid[riverMarkerx - 1, rivertMarkery] = '|';
-                    gridColor[riverMarkerx - 1, rivertMarkery] = ConsoleColor.Blue;
-                    grid[riverMarkerx + 1, rivertMarkery] = '|';
-                    gridColor[riverMarkerx + 1, rivertMarkery] = ConsoleColor.Blue;
-                    grid[riverMarkerx - 3, rivertMarkery] = '#';
-                    gridColor[riverMarkerx - 3, rivertMarkery] = ConsoleColor.Magenta;
-                }
-                riverMarkerx = riverMarkerx + directionModifier;
-                rivertMarkery++;
-                if (riverMarkerx == width - 1)
-                    break;
-                if (riverMarkerx == 1)
-                    break;
-            }
-
-            //This one is connected to a method that doesn't work:
+            Snake(riverMarkerx, rivertMarkery - 1, ConsoleColor.Blue, '|', "down", "river");
             //River flowing up
-            /*SnakeUp(secondRiverMarkerx, secondRiverMarkery, ConsoleColor.Blue, '|');*/
+            Snake(secondRiverMarkerx, secondRiverMarkery + 1, ConsoleColor.Blue, '|', "up", "river");
 
             //Drawing the map to console with all of the preperation from earlier, going line by line and layer by layer
             for (int y = 0; y < height; y++)
@@ -308,17 +233,11 @@ namespace Adventure_map
                     }
                 }
             }
-
-
         }
-
-
-
-
         public static void Main(string[] args)
         {
             //Calling the map method with sizes, first for width, second for height. 
-            Map(75, 20);
+            Map(75, 25);
         }
     }
 }
