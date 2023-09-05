@@ -21,11 +21,9 @@ namespace Adventure_map
         {
             // is needed to create an instance of the Random class, which is used to generate random numbers in the program.
             Random random = new Random();
-
             //Declare grid data structures (the grid will be filled with characters, so a grid of chars, and a grid detailing which color the chars should be, resulting in a kickass map.
             char[,] grid = new char[width, height];
             ConsoleColor[,] gridColor = new ConsoleColor[width, height];
-
             //This method prepares the information to be written onto the map before we send it on to be drawn.
             void SetGridCharAndColor(char symbol, ConsoleColor color, int x, int y)
             {
@@ -59,40 +57,30 @@ namespace Adventure_map
             int wallMarkerx = mapQuarter + 1;
             int wallMarkery = 2;
 
-            //This method takes care of randomly snaking the roads, rivers and wall into a singular direction.
+            //This method takes care of randomly snaking the various elements into a singular direction.
             void Snake(int x, int y, string direction, string type, string curveChance)
             {
-
                 int directionModifier = 0;
-
                 while (true)
                 {
-
+                    //The curvechance is divided into three different options as required for wall, river and road, to determine how likely they are to change course.
                     if (curveChance == "riverlike")
-                    { directionModifier = random.Next(0, 3) - 1; }
-
+                    { directionModifier = random.Next(0, 3) - 1; } //Heavy curvechance (Similating a natural course)
                     else if (curveChance == "roadlike")
                     {
-                        directionModifier = random.Next(0, 6) - 3;
-
+                        directionModifier = random.Next(0, 6) - 3; //Medium curvechance (Similating a semi-natural/semi-manmade course)
                         if (directionModifier > 1 || directionModifier < -1)
                         { directionModifier = 0; }
                     }
-
-                    else //"walllike"
-                    { directionModifier = random.Next(0, 10) - 3;
+                    else //"wall-like"
+                    { directionModifier = random.Next(0, 10) - 3;  //Low curvechance (Similating a man-made, planned out course)
                         if (directionModifier > 1 || directionModifier < -1)
                         { directionModifier = 0; }
                     }
-
                     //These are the directions and the directionmodifiers:
                     if ((direction == "left" || direction == "right") && (x > 1 && x < width - 2))
                     {
-                        directionModifier = random.Next(0, 6) - 3;
-
-                        if (directionModifier > 1 || directionModifier < -1)
-                        { directionModifier = 0; }
-                        if (x < 30 && x > 10)
+                        if (x < 30 && x > 10) //Making sure the road goes straight where it crosses the wall (for esthetic purposes)
                         {
                             directionModifier = 0;
                         }
@@ -108,14 +96,11 @@ namespace Adventure_map
                     }
                     else if ((direction == "up" || direction == "down") && (y > 1 && y < height - 2))
                     {
-
                         x += directionModifier;
-
                         if (direction == "up")
                         {
                             y--;
                         }
-
                         else if (direction == "down")
                         {
                             y++;
@@ -125,7 +110,6 @@ namespace Adventure_map
                     {
                         break;
                     }
-
                     //These are for identifying what type is being represented and connected to the right symbol and color for the map.
                     if (type == "road")
                     {
@@ -159,7 +143,7 @@ namespace Adventure_map
                             SetGridCharAndColor('/', ConsoleColor.Blue, x - 1, y);
                             SetGridCharAndColor('/', ConsoleColor.Blue, x, y);
                             SetGridCharAndColor('/', ConsoleColor.Blue, x + 1, y);
-                            grid[x - 3, y] = '#';
+                            grid[x - 3, y] = '#'; //Detailing the sideroad that always follows the river flowing down
                             gridColor[x - 3, y] = ConsoleColor.Magenta;
                         }
                         else if (directionModifier > 0)
@@ -194,7 +178,6 @@ namespace Adventure_map
                                 SetGridCharAndColor('\\', ConsoleColor.Gray, x, y);
                                 SetGridCharAndColor('\\', ConsoleColor.Gray, x + 1, y);
                             }
-
                             else
                             {
                                 SetGridCharAndColor('|', ConsoleColor.Gray, x, y);
@@ -212,8 +195,6 @@ namespace Adventure_map
                                 SetGridCharAndColor('■', ConsoleColor.Gray, x + 1, y + 2);
                                 y += 2;
                             }
-
-
                         }
                     }
                     //These exist to make sure the snaking stops in time to not disturb the border, or go out of bounds of the grid.
@@ -224,10 +205,8 @@ namespace Adventure_map
                     }
                 }
             }
-
             //Prepare the forest, progressively writing less symbols to make it less dense as it moves along the x axis.
             char[] forestSymbols = { 'T', '@', '(', ')', '!', '%', '*' };
-
             for (int y = 0; y < height; y++)
             {
                 for (int x = 1; x < mapQuarter - 1; x++)
@@ -245,8 +224,7 @@ namespace Adventure_map
                     }
                 }
             }
-
-            //Prepare the border:
+            //Prepare the border characters:
             SetGridCharAndColor('+', ConsoleColor.Yellow, 0, 0);
             SetGridCharAndColor('+', ConsoleColor.Yellow, 0, height - 1);
             SetGridCharAndColor('+', ConsoleColor.Yellow, width - 1, 0);
@@ -261,7 +239,6 @@ namespace Adventure_map
                 SetGridCharAndColor('|', ConsoleColor.Yellow, 0, y);
                 SetGridCharAndColor('|', ConsoleColor.Yellow, width - 1, y);
             }
-
             //Prepare the Title:
             string title = "ADVENTURE MAP";
             int titleX = width / 2 - title.Length / 2;
@@ -270,18 +247,15 @@ namespace Adventure_map
                 grid[titleX + i, 1] = title[i];
                 gridColor[titleX + i, 1] = ConsoleColor.Red;
             }
-
             //Road on bridge, a fixed constant:
             for (int i = 0; i < 5; i++)
             {
                 SetGridCharAndColor('#', ConsoleColor.Magenta, bridgeStartx + i, bridgeStarty + 1);
             }
-
             //Sideroad Startpoint, also a fixed constant:
             SetGridCharAndColor('#', ConsoleColor.Magenta, sideRoadMarkerx, bridgeStarty + 1);
             grid[sideRoadMarkerx, sideRoadMarkery] = '#';
             gridColor[sideRoadMarkerx, sideRoadMarkery] = ConsoleColor.Magenta;
-
             //Bridge
             for (int y = 0; y < 5; y++)
             {
@@ -295,7 +269,6 @@ namespace Adventure_map
                 gridColor[bridgeStartx - 5, bridgeStarty + 2] = ConsoleColor.Gray;
                 bridgeStartx++;
             }
-
             //Road going Left, snaking randomly
             Snake(markerPointxForRoadGoingLeft, markerPointyForRoadGoingLeft, "left", "road", "roadlike");
             //Road going right, snaking randomly
@@ -321,7 +294,6 @@ namespace Adventure_map
                         Console.ForegroundColor = gridColor[x, y];
                         Console.Write(grid[x, y]);
                     }
-
                     if (x == width - 1)
                     {
                         Console.WriteLine();
