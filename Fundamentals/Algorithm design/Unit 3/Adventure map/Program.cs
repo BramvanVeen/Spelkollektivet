@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.Design;
 using System.Drawing;
 using System.Net;
 using System.Net.Http.Headers;
@@ -31,9 +32,6 @@ namespace Adventure_map
                 grid[x, y] = symbol;
                 gridColor[x, y] = color;
             }
-
-
-
             //Prepare the Bridge starting point and subsequent markerpoints for all other elements:
             int bridgeStartx = width * 3 / 4;
             int bridgeStarty = random.Next(7, height - 7);
@@ -62,12 +60,32 @@ namespace Adventure_map
             int wallMarkery = 2;
 
             //This method takes care of randomly snaking the roads, rivers and wall into a singular direction.
-            void Snake(int x, int y, string direction, string type)
+            void Snake(int x, int y, string direction, string type, string curveChance)
             {
+
                 int directionModifier = 0;
 
                 while (true)
-                {   //These are the directions and the directionmodifiers:
+                {
+
+                    if (curveChance == "riverlike")
+                    { directionModifier = random.Next(0, 3) - 1; }
+
+                    else if (curveChance == "roadlike")
+                    {
+                        directionModifier = random.Next(0, 6) - 3;
+
+                        if (directionModifier > 1 || directionModifier < -1)
+                        { directionModifier = 0; }
+                    }
+
+                    else //"walllike"
+                    { directionModifier = random.Next(0, 10) - 3;
+                        if (directionModifier > 1 || directionModifier < -1)
+                        { directionModifier = 0; }
+                    }
+
+                    //These are the directions and the directionmodifiers:
                     if ((direction == "left" || direction == "right") && (x > 1 && x < width - 2))
                     {
                         directionModifier = random.Next(0, 6) - 3;
@@ -90,7 +108,7 @@ namespace Adventure_map
                     }
                     else if ((direction == "up" || direction == "down") && (y > 1 && y < height - 2))
                     {
-                        directionModifier = random.Next(0, 3) - 1;
+
                         x += directionModifier;
 
                         if (direction == "up")
@@ -279,15 +297,15 @@ namespace Adventure_map
             }
 
             //Road going Left, snaking randomly
-            Snake(markerPointxForRoadGoingLeft, markerPointyForRoadGoingLeft, "left", "road");
+            Snake(markerPointxForRoadGoingLeft, markerPointyForRoadGoingLeft, "left", "road", "roadlike");
             //Road going right, snaking randomly
-            Snake(MarkerPointxForRoadGoingRight, MarkerPointyForRoadGoingRight, "right", "road");
+            Snake(MarkerPointxForRoadGoingRight, MarkerPointyForRoadGoingRight, "right", "road", "roadlike");
             //River flowing down, snaking randomly
-            Snake(markerxForRiverFlowingDown, markeryForRiverFlowingDown - 1, "down", "river");
+            Snake(markerxForRiverFlowingDown, markeryForRiverFlowingDown - 1, "down", "river", "riverlike");
             //River flowing up, snaking randomly
-            Snake(markerxForRiverFlowingUp, markeryForRiverFlowingUp + 1, "up", "river");
+            Snake(markerxForRiverFlowingUp, markeryForRiverFlowingUp + 1, "up", "river", "riverlike");
             //Wall going down, snaking randomly
-            Snake(wallMarkerx, wallMarkery, "down", "wall");
+            Snake(wallMarkerx, wallMarkery, "down", "wall", "walllike");
 
             //Drawing the map to console with all of the preperation from earlier, going line by line and layer by layer
             for (int y = 0; y < height; y++)
