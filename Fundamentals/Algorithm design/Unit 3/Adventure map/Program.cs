@@ -13,7 +13,6 @@ using System.Threading.Tasks.Dataflow;
 
 namespace Adventure_map
 {
-
     public class Program
     {
         //The Map method. Takes width and heigth to create a 2 dimensional grid. Static because it is intended to be a standalone method that does not operate on an instance of a class.
