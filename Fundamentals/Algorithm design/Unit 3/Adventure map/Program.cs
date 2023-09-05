@@ -166,37 +166,35 @@ namespace Adventure_map
                     }
                     else if (type == "wall" && direction == "down")
                     {
-                        // Check if there's a road character in front
-                        if (grid[x, y] != '#')
+
+                        if (directionModifier < 0)
                         {
-                            if (directionModifier < 0)
-                            {
-                                SetGridCharAndColor('/', ConsoleColor.Gray, x, y);
-                                SetGridCharAndColor('/', ConsoleColor.Gray, x + 1, y);
-                            }
-                            else if (directionModifier > 0)
-                            {
-                                SetGridCharAndColor('\\', ConsoleColor.Gray, x, y);
-                                SetGridCharAndColor('\\', ConsoleColor.Gray, x + 1, y);
-                            }
-                            else
-                            {
-                                SetGridCharAndColor('|', ConsoleColor.Gray, x, y);
-                                SetGridCharAndColor('|', ConsoleColor.Gray, x + 1, y);
-                            }
-                            //Recognise if the wall will cross the road:
-                            if (grid[x, y + 1] == '#')
-                            {
-                                // Place a square character if the next position is a road
-                                SetGridCharAndColor('■', ConsoleColor.Gray, x - 1, y);
-                                SetGridCharAndColor('■', ConsoleColor.Gray, x - 1, y + 2);
-                                SetGridCharAndColor('■', ConsoleColor.Gray, x, y);
-                                SetGridCharAndColor('■', ConsoleColor.Gray, x, y + 2);
-                                SetGridCharAndColor('■', ConsoleColor.Gray, x + 1, y);
-                                SetGridCharAndColor('■', ConsoleColor.Gray, x + 1, y + 2);
-                                y += 2;
-                            }
+                            SetGridCharAndColor('/', ConsoleColor.Gray, x, y);
+                            SetGridCharAndColor('/', ConsoleColor.Gray, x + 1, y);
                         }
+                        else if (directionModifier > 0)
+                        {
+                            SetGridCharAndColor('\\', ConsoleColor.Gray, x, y);
+                            SetGridCharAndColor('\\', ConsoleColor.Gray, x + 1, y);
+                        }
+                        else
+                        {
+                            SetGridCharAndColor('|', ConsoleColor.Gray, x, y);
+                            SetGridCharAndColor('|', ConsoleColor.Gray, x + 1, y);
+                        }
+                        //Recognise if the wall will cross the road:
+                        if (grid[x, y + 1] == '#')
+                        {
+                            // Place a square character if the next position is a road
+                            SetGridCharAndColor('■', ConsoleColor.Gray, x - 1, y);
+                            SetGridCharAndColor('■', ConsoleColor.Gray, x - 1, y + 2);
+                            SetGridCharAndColor('■', ConsoleColor.Gray, x, y);
+                            SetGridCharAndColor('■', ConsoleColor.Gray, x, y + 2);
+                            SetGridCharAndColor('■', ConsoleColor.Gray, x + 1, y);
+                            SetGridCharAndColor('■', ConsoleColor.Gray, x + 1, y + 2);
+                            y += 2;
+                        }
+
                     }
                     //These exist to make sure the snaking stops in time to not disturb the border, or go out of bounds of the grid.
                     if ((direction == "up" || direction == "down" || direction == "left" || direction == "right") &&
