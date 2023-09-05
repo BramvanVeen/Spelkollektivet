@@ -65,15 +65,16 @@ namespace Adventure_map
                 {
                     //The curvechance is divided into three different options as required for wall, river and road, to determine how likely they are to change course.
                     if (curveChance == "riverlike")
-                    { directionModifier = random.Next(0, 3) - 1; } //Heavy curvechance (Similating a natural course)
+                    { directionModifier = random.Next(0, 3) - 1; } //Heavy curvechance (Simulating a natural course)
                     else if (curveChance == "roadlike")
                     {
-                        directionModifier = random.Next(0, 6) - 3; //Medium curvechance (Similating a semi-natural/semi-manmade course)
+                        directionModifier = random.Next(0, 6) - 3; //Medium curvechance (Simulating a semi-natural/semi-manmade course)
                         if (directionModifier > 1 || directionModifier < -1)
                         { directionModifier = 0; }
                     }
                     else //"wall-like"
-                    { directionModifier = random.Next(0, 10) - 3;  //Low curvechance (Similating a man-made, planned out course)
+                    {
+                        directionModifier = random.Next(0, 10) - 3;  //Low curvechance (Simulating a man-made, planned out course)
                         if (directionModifier > 1 || directionModifier < -1)
                         { directionModifier = 0; }
                     }
