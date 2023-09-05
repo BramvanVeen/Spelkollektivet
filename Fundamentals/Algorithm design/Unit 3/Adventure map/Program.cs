@@ -1,9 +1,11 @@
 ﻿using Microsoft.VisualBasic;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Drawing;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Threading.Tasks.Dataflow;
@@ -13,58 +15,69 @@ namespace Adventure_map
 
     public class Program
     {
+        //The Map method. Takes width and heigth to create a 2 dimensional grid. Static because it is intended to be a standalone method that does not operate on an instance of a class.
         static void Map(int width, int height)
         {
+            // is needed to create an instance of the Random class, which is used to generate random numbers in the program.
             Random random = new Random();
 
-            //Declare grid data structure
+            //Declare grid data structures (the grid will be filled with characters, so a grid of chars, and a grid detailing which color the chars should be, resulting in a kickass map.
             char[,] grid = new char[width, height];
             ConsoleColor[,] gridColor = new ConsoleColor[width, height];
 
+            //This method prepares the information to be written onto the map before we send it on to be drawn.
             void SetGridCharAndColor(char symbol, ConsoleColor color, int x, int y)
             {
                 grid[x, y] = symbol;
                 gridColor[x, y] = color;
             }
 
-            //Prepare the Bridge and subsequent markerpoints:
+
+
+            //Prepare the Bridge starting point and subsequent markerpoints for all other elements:
             int bridgeStartx = width * 3 / 4;
-            int markerPointx = bridgeStartx - 1;
             int bridgeStarty = random.Next(7, height - 7);
-            int markerPointy = bridgeStarty + 1;
-            int secondMarkerPointxForRoadGoingRight = markerPointx + 5;
-            int secondMarkerPointyForRoadGoingRight = markerPointy;
-            int riverMarkerx = bridgeStartx + 2;
-            int rivertMarkery = bridgeStarty + 3;
-            int secondRiverMarkerx = bridgeStartx + 2;
-            int secondRiverMarkery = bridgeStarty - 1;
-            int sideRoadMarkerx = markerPointx;
-            int sideRoadMarkery = markerPointy + 1;
+
+            int markerPointxForRoadGoingLeft = bridgeStartx - 1;
+            int markerPointyForRoadGoingLeft = bridgeStarty + 1;
+
+            int MarkerPointxForRoadGoingRight = markerPointxForRoadGoingLeft + 5;
+            int MarkerPointyForRoadGoingRight = markerPointyForRoadGoingLeft;
+
+            int markerxForRiverFlowingDown = bridgeStartx + 2;
+            int markeryForRiverFlowingDown = bridgeStarty + 3;
+
+            int markerxForRiverFlowingUp = bridgeStartx + 2;
+            int markeryForRiverFlowingUp = bridgeStarty - 1;
+
+            int sideRoadMarkerx = markerPointxForRoadGoingLeft;
+            int sideRoadMarkery = markerPointyForRoadGoingLeft + 1;
+
             int mapQuarter = width / 4;
             int quarterQuarter = mapQuarter / 4;
             int doubleQuarterQuarter = quarterQuarter * 2;
             int threeQuarterQuarter = quarterQuarter * 3;
+
             int wallMarkerx = mapQuarter + 1;
             int wallMarkery = 2;
 
-            void Snake(int x, int y, ConsoleColor color, char symbol, string direction, string type)
+            //This method takes care of randomly snaking the roads, rivers and wall into a singular direction.
+            void Snake(int x, int y, string direction, string type)
             {
                 int directionModifier = 0;
-                grid[x, y] = symbol;
-                gridColor[x, y] = color;
-                
-                while (true)
-                {
-                    
-                    /*This direction modifier needs attention  
-                    directionModifier += random.Next(0, 3) - 1;
-                    */
-                    if ((direction == "left" || direction == "right") && (x > 1 && x < width - 2))
 
+                while (true)
+                {   //These are the directions and the directionmodifiers:
+                    if ((direction == "left" || direction == "right") && (x > 1 && x < width - 2))
                     {
-                        grid[x, y] = symbol;
-                        gridColor[x, y] = color;
-                        directionModifier = random.Next(0, 3) - 1;
+                        directionModifier = random.Next(0, 6) - 3;
+
+                        if (directionModifier > 1 || directionModifier < -1)
+                        { directionModifier = 0; }
+                        if (x < 30 && x > 10)
+                        {
+                            directionModifier = 0;
+                        }
                         y += directionModifier;
                         if (direction == "left")
                         {
@@ -79,12 +92,12 @@ namespace Adventure_map
                     {
                         directionModifier = random.Next(0, 3) - 1;
                         x += directionModifier;
-                        grid[x, y] = symbol;
-                        gridColor[x, y] = color;
+
                         if (direction == "up")
                         {
                             y--;
                         }
+
                         else if (direction == "down")
                         {
                             y++;
@@ -95,6 +108,7 @@ namespace Adventure_map
                         break;
                     }
 
+                    //These are for identifying what type is being represented and connected to the right symbol and color for the map.
                     if (type == "road")
                     {
                         SetGridCharAndColor('#', ConsoleColor.Magenta, x, y);
@@ -103,114 +117,97 @@ namespace Adventure_map
                     {
                         if (directionModifier > 0)
                         {
-                            grid[x - 1, y] = '/';
-                            gridColor[x - 1, y] = color;
-                            grid[x, y] = '/';
-                            gridColor[x, y] = color;
-                            grid[x + 1, y] = '/';
-                            gridColor[x + 1, y] = color;
+                            SetGridCharAndColor('/', ConsoleColor.Blue, x - 1, y);
+                            SetGridCharAndColor('/', ConsoleColor.Blue, x, y);
+                            SetGridCharAndColor('/', ConsoleColor.Blue, x + 1, y);
                         }
                         else if (directionModifier < 0)
                         {
-                            grid[x - 1, y] = '\\';
-                            gridColor[x - 1, y] = color;
-                            grid[x, y] = '\\';
-                            gridColor[x, y] = color;
-                            grid[x + 1, y] = '\\';
-                            gridColor[x + 1, y] = color;
+                            SetGridCharAndColor('\\', ConsoleColor.Blue, x - 1, y);
+                            SetGridCharAndColor('\\', ConsoleColor.Blue, x, y);
+                            SetGridCharAndColor('\\', ConsoleColor.Blue, x + 1, y);
                         }
                         else
                         {
-                            grid[x - 1, y] = '|';
-                            gridColor[x - 1, y] = color;
-                            grid[x, y] = '|';
-                            gridColor[x, y] = color;
-                            grid[x + 1, y] = '|';
-                            gridColor[x + 1, y] = color;
+                            SetGridCharAndColor('|', ConsoleColor.Blue, x - 1, y);
+                            SetGridCharAndColor('|', ConsoleColor.Blue, x, y);
+                            SetGridCharAndColor('|', ConsoleColor.Blue, x + 1, y);
                         }
                     }
                     else if (type == "river" && direction == "down")
                     {
                         if (directionModifier < 0)
                         {
-                            grid[x - 1, y] = '/';
-                            gridColor[x - 1, y] = color;
-                            grid[x, y] = '/';
-                            gridColor[x, y] = color;
-                            grid[x + 1, y] = '/';
-                            gridColor[x + 1, y] = color;
-
-                            grid[x -3, y] = '#';
-                            gridColor[x -3, y] = ConsoleColor.Magenta;
+                            SetGridCharAndColor('/', ConsoleColor.Blue, x - 1, y);
+                            SetGridCharAndColor('/', ConsoleColor.Blue, x, y);
+                            SetGridCharAndColor('/', ConsoleColor.Blue, x + 1, y);
+                            grid[x - 3, y] = '#';
+                            gridColor[x - 3, y] = ConsoleColor.Magenta;
                         }
                         else if (directionModifier > 0)
                         {
-                            grid[x - 1, y] = '\\';
-                            gridColor[x - 1, y] = color;
-                            grid[x, y] = '\\';
-                            gridColor[x, y] = color;
-                            grid[x + 1, y] = '\\';
-                            gridColor[x + 1, y] = color;
-                            grid[x -3, y] = '#';
-                            gridColor[x -3, y] = ConsoleColor.Magenta;
+                            SetGridCharAndColor('\\', ConsoleColor.Blue, x - 1, y);
+                            SetGridCharAndColor('\\', ConsoleColor.Blue, x, y);
+                            SetGridCharAndColor('\\', ConsoleColor.Blue, x + 1, y);
+                            grid[x - 3, y] = '#';
+                            gridColor[x - 3, y] = ConsoleColor.Magenta;
                         }
                         else
                         {
-                            grid[x - 1, y] = '|';
-                            gridColor[x - 1, y] = color;
-                            grid[x, y] = '|';
-                            gridColor[x, y] = color;
-                            grid[x + 1, y] = '|';
-                            gridColor[x + 1, y] = color;
-
-                            grid[x -3, y] = '#';
-                            gridColor[x -3, y] = ConsoleColor.Magenta;
-
-
+                            SetGridCharAndColor('|', ConsoleColor.Blue, x - 1, y);
+                            SetGridCharAndColor('|', ConsoleColor.Blue, x, y);
+                            SetGridCharAndColor('|', ConsoleColor.Blue, x + 1, y);
+                            grid[x - 3, y] = '#';
+                            gridColor[x - 3, y] = ConsoleColor.Magenta;
                         }
                     }
                     else if (type == "wall" && direction == "down")
                     {
+                        // Check if there's a road character in front
                         if (grid[x, y] != '#')
                         {
-                            grid[x, y] = '#';
-                            gridColor[x, y] = ConsoleColor.Magenta;
-                            grid[x + 1, y] = '#';
-                            gridColor[x + 1, y] = ConsoleColor.Magenta;
-                        }
+                            if (directionModifier < 0)
+                            {
+                                SetGridCharAndColor('/', ConsoleColor.Gray, x, y);
+                                SetGridCharAndColor('/', ConsoleColor.Gray, x + 1, y);
+                            }
+                            else if (directionModifier > 0)
+                            {
+                                SetGridCharAndColor('\\', ConsoleColor.Gray, x, y);
+                                SetGridCharAndColor('\\', ConsoleColor.Gray, x + 1, y);
+                            }
 
-                        if (directionModifier < 0)
-                        {
-                            grid[x, y] = '/';
-                            gridColor[x, y] = color;
-                            grid[x + 1, y] = '/';
-                            gridColor[x + 1, y] = color;
-                        }
-                        else if (directionModifier > 0)
-                        {
-                            grid[x, y] = '\\';
-                            gridColor[x, y] = color;
-                            grid[x + 1, y] = '\\';
-                            gridColor[x + 1, y] = color;
-                        }
-                        else
-                        {
-                            grid[x, y] = '|';
-                            gridColor[x, y] = color;
-                            grid[x + 1, y] = '|';
-                            gridColor[x + 1, y] = color;
+                            else
+                            {
+                                SetGridCharAndColor('|', ConsoleColor.Gray, x, y);
+                                SetGridCharAndColor('|', ConsoleColor.Gray, x + 1, y);
+                            }
+                            //Recognise if the wall will cross the road:
+                            if (grid[x, y + 1] == '#')
+                            {
+                                // Place a square character if the next position is a road
+                                SetGridCharAndColor('■', ConsoleColor.Gray, x - 1, y);
+                                SetGridCharAndColor('■', ConsoleColor.Gray, x - 1, y + 2);
+                                SetGridCharAndColor('■', ConsoleColor.Gray, x, y);
+                                SetGridCharAndColor('■', ConsoleColor.Gray, x, y + 2);
+                                SetGridCharAndColor('■', ConsoleColor.Gray, x + 1, y);
+                                SetGridCharAndColor('■', ConsoleColor.Gray, x + 1, y + 2);
+                                y += 2;
+                            }
+
+
                         }
                     }
+                    //These exist to make sure the snaking stops in time to not disturb the border, or go out of bounds of the grid.
                     if ((direction == "up" || direction == "down" || direction == "left" || direction == "right") &&
-                       ((y == 1 || y == height - 2) || (x == 1 || x == width - 2)))
+                   ((y == 1 || y == height - 2) || (x == 1 || x == width - 2)))
                     {
                         break;
                     }
-                    
                 }
             }
 
-            //Prepare the forest
+            //Prepare the forest, progressively writing less symbols to make it less dense as it moves along the x axis.
             char[] forestSymbols = { 'T', '@', '(', ')', '!', '%', '*' };
 
             for (int y = 0; y < height; y++)
@@ -250,20 +247,19 @@ namespace Adventure_map
             //Prepare the Title:
             string title = "ADVENTURE MAP";
             int titleX = width / 2 - title.Length / 2;
-
             for (int i = 0; i < title.Length; i++)
             {
                 grid[titleX + i, 1] = title[i];
                 gridColor[titleX + i, 1] = ConsoleColor.Red;
             }
 
-            //Road on bridge
+            //Road on bridge, a fixed constant:
             for (int i = 0; i < 5; i++)
             {
                 SetGridCharAndColor('#', ConsoleColor.Magenta, bridgeStartx + i, bridgeStarty + 1);
             }
 
-            //Sideroad Startpoint
+            //Sideroad Startpoint, also a fixed constant:
             SetGridCharAndColor('#', ConsoleColor.Magenta, sideRoadMarkerx, bridgeStarty + 1);
             grid[sideRoadMarkerx, sideRoadMarkery] = '#';
             gridColor[sideRoadMarkerx, sideRoadMarkery] = ConsoleColor.Magenta;
@@ -282,16 +278,16 @@ namespace Adventure_map
                 bridgeStartx++;
             }
 
-            //Wall going down
-            Snake(wallMarkerx, wallMarkery, ConsoleColor.Gray, '|', "down", "wall");
-            //Road going Left
-            Snake(markerPointx, markerPointy, ConsoleColor.Magenta, '#', "left", "road");
-            //Road going right
-            Snake(secondMarkerPointxForRoadGoingRight, secondMarkerPointyForRoadGoingRight, ConsoleColor.Magenta, '#', "right", "road");
-            //River flowing down
-            Snake(riverMarkerx, rivertMarkery, ConsoleColor.Blue, '|', "down", "river");
-            //River flowing up
-            Snake(secondRiverMarkerx, secondRiverMarkery, ConsoleColor.Blue, '|', "up", "river");
+            //Road going Left, snaking randomly
+            Snake(markerPointxForRoadGoingLeft, markerPointyForRoadGoingLeft, "left", "road");
+            //Road going right, snaking randomly
+            Snake(MarkerPointxForRoadGoingRight, MarkerPointyForRoadGoingRight, "right", "road");
+            //River flowing down, snaking randomly
+            Snake(markerxForRiverFlowingDown, markeryForRiverFlowingDown - 1, "down", "river");
+            //River flowing up, snaking randomly
+            Snake(markerxForRiverFlowingUp, markeryForRiverFlowingUp + 1, "up", "river");
+            //Wall going down, snaking randomly
+            Snake(wallMarkerx, wallMarkery, "down", "wall");
 
             //Drawing the map to console with all of the preperation from earlier, going line by line and layer by layer
             for (int y = 0; y < height; y++)
