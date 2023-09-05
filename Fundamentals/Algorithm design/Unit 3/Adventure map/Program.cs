@@ -166,7 +166,6 @@ namespace Adventure_map
                     }
                     else if (type == "wall" && direction == "down")
                     {
-
                         if (directionModifier < 0)
                         {
                             SetGridCharAndColor('/', ConsoleColor.Gray, x, y);
@@ -194,7 +193,6 @@ namespace Adventure_map
                             SetGridCharAndColor('■', ConsoleColor.Gray, x + 1, y + 2);
                             y += 2;
                         }
-
                     }
                     //These exist to make sure the snaking stops in time to not disturb the border, or go out of bounds of the grid.
                     if ((direction == "up" || direction == "down" || direction == "left" || direction == "right") &&
