@@ -61,8 +61,6 @@ namespace Adventure_map
             }
         }
         */
-
-
         static char[] RoadSymbols = { '#', '#', '#' };
         const ConsoleColor RoadColor = ConsoleColor.Magenta;
         const int RoadWidth = 1;
@@ -77,7 +75,42 @@ namespace Adventure_map
         const ConsoleColor WallColor = ConsoleColor.Gray;
         const int WallWidth = 2;
         const int WallCurveChance = 10;
-        
+
+        public abstract class MapElement
+        {
+            public char[] Symbols { get; set; }
+            public ConsoleColor Color { get; set; }
+            public int Width { get; set; }
+            public int CurveChance { get; set; }
+
+            protected MapElement(char[] symbols, ConsoleColor color, int width, int curveChance)
+            {
+                Symbols = symbols;
+                Color = color;
+                Width = width;
+                CurveChance = curveChance;
+            }
+        }
+        public class RoadInfo : MapElement
+        {
+            public RoadInfo() : base(RoadSymbols, RoadColor, RoadWidth, RoadCurveChance)
+            {
+            }
+        }
+
+        public class RiverInfo : MapElement
+        {
+            public RiverInfo() : base(RiverSymbols, RiverColor, RiverWidth, RiverCurveChance)
+            {
+            }
+        }
+        public class WallInfo : MapElement
+        {
+            public WallInfo() : base(WallSymbols, WallColor, WallWidth, WallCurveChance)
+            {
+            }
+        }
+
 
         //The Map method. Takes width and heigth to create a 2 dimensional grid. Static because it is intended to be a standalone method that does not operate on an instance of a class.
         static void Map(int width, int height)
@@ -121,7 +154,7 @@ namespace Adventure_map
             int wallMarkery = 2;
 
             //This method takes care of randomly snaking the various elements into a singular direction.
-            void Snake(int x, int y, Direction direction, char[] symbols, ConsoleColor Color, int curveChance, int Width)
+            void Snake(int x, int y, Direction direction, char[] symbols, ConsoleColor Color, int curveChance, int wideness)
             {
                 int directionModifier = 0;
                 while (true)
@@ -130,34 +163,38 @@ namespace Adventure_map
                     {
                         case RoadCurveChance:
                             directionModifier = random.Next(0, 6) - 1;
-                            break;
+                            continue;
                         case RiverCurveChance:
                             directionModifier = random.Next(0, 3) - 1;
-                            break;
+                            continue;
                         case WallCurveChance:
                             directionModifier = random.Next(0, 11) - 1;
-                            break;
+                            continue;
                     }
                     switch (direction)
                     {
                         case Direction.Up:
                             y--;
                             x += directionModifier;
-                            break;
+                            continue;
                         case Direction.Down:
                             y++;
                             x += directionModifier;
-                            break;
+                            continue;
                         case Direction.Left:
                             x--;
                             y += directionModifier;
-                            break;
+                            continue;
                         case Direction.Right:
                             x++;
                             y += directionModifier;
-                            break;
+                            continue;
                     }
                     //These are to make sure the snaking stops in time to not disturb the border, or go out of bounds of the grid.
+
+                    char symbol = symbols[random.Next(symbols.Length)];
+                    SetGridCharAndColor(symbol, Color, x, y);
+
                     if ((direction == Direction.Up || direction == Direction.Down || direction == Direction.Left || direction == Direction.Right) &&
                         ((y == 1 || y == height - 2) || (x == 1 || x == width - 2)))
                     {
@@ -299,7 +336,7 @@ namespace Adventure_map
             {
                 SetGridCharAndColor('#', ConsoleColor.Magenta, bridgeStartx + i, bridgeStarty + 1);
             }
-            //Sideroad Startpoint, also a fixed constant:
+            //Sideroad Startpoint:
             SetGridCharAndColor('#', ConsoleColor.Magenta, sideRoadMarkerx, bridgeStarty + 1);
             grid[sideRoadMarkerx, sideRoadMarkery] = '#';
             gridColor[sideRoadMarkerx, sideRoadMarkery] = ConsoleColor.Magenta;
@@ -317,15 +354,15 @@ namespace Adventure_map
                 bridgeStartx++;
             }
             //Road going Left, snaking randomly
-            Snake(markerPointxForRoadGoingLeft, markerPointyForRoadGoingLeft, Direction.Left, RoadColor, RoadCurveChance, RoadWidth);
+            Snake(markerPointxForRoadGoingLeft, markerPointyForRoadGoingLeft, Direction.Left, RoadSymbols, RoadColor, RoadCurveChance, RoadWidth);
             //Road going right, snaking randomly
-            Snake(MarkerPointxForRoadGoingRight, MarkerPointyForRoadGoingRight, Direction.Right, RoadColor, RoadCurveChance, RoadWidth);
+            Snake(MarkerPointxForRoadGoingRight, MarkerPointyForRoadGoingRight, Direction.Right, RoadSymbols, RoadColor, RoadCurveChance, RoadWidth);
             //River flowing down, snaking randomly
-            Snake(markerxForRiverFlowingDown, markeryForRiverFlowingDown - 1, Direction.Down, RiverColor, RiverCurveChance, RiverWidth);
+            Snake(markerxForRiverFlowingDown, markeryForRiverFlowingDown - 1, Direction.Down, RiverSymbols, RiverColor, RiverCurveChance, RiverWidth);
             //River flowing up, snaking randomly
-            Snake(markerxForRiverFlowingUp, markeryForRiverFlowingUp + 1, Direction.Up, RiverColor, RiverCurveChance, RiverWidth);
+            Snake(markerxForRiverFlowingUp, markeryForRiverFlowingUp + 1, Direction.Up, RiverSymbols, RiverColor, RiverCurveChance, RiverWidth);
             //Wall going down, snaking randomly
-            Snake(wallMarkerx, wallMarkery, Direction.Down, WallColor, WallCurveChance, WallWidth);
+            Snake(wallMarkerx, wallMarkery, Direction.Down, WallSymbols, WallColor, WallCurveChance, WallWidth);
 
             //Drawing the map to console with all of the preperation from earlier, going line by line and layer by layer
             for (int y = 0; y < height; y++)
