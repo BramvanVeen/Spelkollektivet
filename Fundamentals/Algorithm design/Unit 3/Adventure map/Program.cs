@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.Design;
 using System.Drawing;
+using System.Linq;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
@@ -17,73 +18,18 @@ namespace Adventure_map
     {
         enum Direction
         {
-            Up,
-            Down,
-            Left,
-            Right
+            North,
+            South,
+            West,
+            East
         }
-        /*
-        public class Road
+        public class MapElement
         {
-            public ConsoleColor Color { get; set; }
-            public int CurveChance { get; set; }
-            public int Width { get; set; }
-            public Road(ConsoleColor color, int curveChance, int width)
-            {
-                Color = ConsoleColor.Magenta;
-                CurveChance = RoadCurveChance;
-                Width = RoadWidth;
-            }
-        }
-        public class Wall
-        {
-            public ConsoleColor Color { get; set; }
-            public int CurveChance { get; set; }
-            public int Width { get; set; }
-            public Wall(ConsoleColor color, int curveChance, int width)
-            {
-                Color = ConsoleColor.Gray;
-                CurveChance = WallCurveChance;
-                Width = WallWidth;
-            }
-        }
-        public class River
-        {
-            public char[] Symbols { get; set; }
-            public ConsoleColor Color { get; set; }
-            public int Width { get; set; }
-            public int CurveChance { get; set; }
-            public River(ConsoleColor color, int curveChance, int width)
-            {
-                Color = ConsoleColor.Blue;
-                CurveChance = RiverCurveChance;
-                Width = RiverWidth;
-            }
-        }
-        */
-        static char[] RoadSymbols = { '#', '#', '#' };
-        const ConsoleColor RoadColor = ConsoleColor.Magenta;
-        const int RoadWidth = 1;
-        const int RoadCurveChance = 6;
-
-        static char[] RiverSymbols = { '\\', '|', '/' };
-        const ConsoleColor RiverColor = ConsoleColor.Blue;
-        const int RiverWidth = 3;
-        const int RiverCurveChance = 3;
-
-        static char[] WallSymbols = { '\\', '|', '/' };
-        const ConsoleColor WallColor = ConsoleColor.Gray;
-        const int WallWidth = 2;
-        const int WallCurveChance = 10;
-
-        public abstract class MapElement
-        {
-            public char[] Symbols { get; set; }
-            public ConsoleColor Color { get; set; }
-            public int Width { get; set; }
-            public int CurveChance { get; set; }
-
-            protected MapElement(char[] symbols, ConsoleColor color, int width, int curveChance)
+            public char[] Symbols;
+            public ConsoleColor Color;
+            public int Width;
+            public int CurveChance;
+            public MapElement(char[] symbols, ConsoleColor color, int width, int curveChance)
             {
                 Symbols = symbols;
                 Color = color;
@@ -91,27 +37,11 @@ namespace Adventure_map
                 CurveChance = curveChance;
             }
         }
-        public class RoadInfo : MapElement
-        {
-            public RoadInfo() : base(RoadSymbols, RoadColor, RoadWidth, RoadCurveChance)
-            {
-            }
-        }
-
-        public class RiverInfo : MapElement
-        {
-            public RiverInfo() : base(RiverSymbols, RiverColor, RiverWidth, RiverCurveChance)
-            {
-            }
-        }
-        public class WallInfo : MapElement
-        {
-            public WallInfo() : base(WallSymbols, WallColor, WallWidth, WallCurveChance)
-            {
-            }
-        }
-
-
+        static MapElement WallElement = new(new char[] { '\\', '|', '/' }, ConsoleColor.Gray, 2, 10);
+        static MapElement HiddenPathElement = new(new char[] { '\\', '|', '/' }, ConsoleColor.DarkGreen, 1, 3);
+        static MapElement RoadElement = new(new char[] { '#', '#', '#' }, ConsoleColor.Magenta, 1, 6);
+        static MapElement RiverElement = new(new char[] { '\\', '|', '/' }, ConsoleColor.Blue, 3, 3);
+        static MapElement ForestElement = new(new char[] { 'T', '@', '(', ')', '!', '%', '*' }, ConsoleColor.Green, 1, 1);
         //The Map method. Takes width and heigth to create a 2 dimensional grid. Static because it is intended to be a standalone method that does not operate on an instance of a class.
         static void Map(int width, int height)
         {
@@ -128,7 +58,7 @@ namespace Adventure_map
             }
             //Prepare the Bridge starting point and subsequent markerpoints for all other elements:
             int bridgeStartx = width * 3 / 4;
-            int bridgeStarty = random.Next(7, height - 7);
+            int bridgeStarty = random.Next(height / 4, height * 3 / 4);
 
             int markerPointxForRoadGoingLeft = bridgeStartx - 1;
             int markerPointyForRoadGoingLeft = bridgeStarty + 1;
@@ -150,147 +80,88 @@ namespace Adventure_map
             int doubleQuarterQuarter = quarterQuarter * 2;
             int threeQuarterQuarter = quarterQuarter * 3;
 
-            int wallMarkerx = mapQuarter + 1;
-            int wallMarkery = 2;
-
             //This method takes care of randomly snaking the various elements into a singular direction.
-            void Snake(int x, int y, Direction direction, char[] symbols, ConsoleColor Color, int curveChance, int wideness)
+            void Snake(int x, int y, Direction direction, MapElement mapElement)
             {
-                int directionModifier = 0;
                 while (true)
                 {
-                    switch (curveChance)
+                    int directionModifier = random.Next(mapElement.CurveChance) - 1;
+                    if (directionModifier > 1)
                     {
-                        case RoadCurveChance:
-                            directionModifier = random.Next(0, 6) - 1;
-                            continue;
-                        case RiverCurveChance:
-                            directionModifier = random.Next(0, 3) - 1;
-                            continue;
-                        case WallCurveChance:
-                            directionModifier = random.Next(0, 11) - 1;
-                            continue;
+                        directionModifier = 0;
                     }
                     switch (direction)
                     {
-                        case Direction.Up:
+                        case Direction.North:
                             y--;
                             x += directionModifier;
-                            continue;
-                        case Direction.Down:
+                            break;
+                        case Direction.South:
                             y++;
                             x += directionModifier;
-                            continue;
-                        case Direction.Left:
+                            break;
+                        case Direction.West:
                             x--;
-                            y += directionModifier;
-                            continue;
-                        case Direction.Right:
+                            if (mapElement == RoadElement && x == mapQuarter + 1 || x == mapQuarter || x == mapQuarter - 1)
+                            {
+                                directionModifier = 0;
+                            }
+                            else
+                            {
+                                y += directionModifier;
+                            }
+                            break;
+                        case Direction.East:
                             x++;
                             y += directionModifier;
-                            continue;
+                            break;
                     }
-                    //These are to make sure the snaking stops in time to not disturb the border, or go out of bounds of the grid.
-
-                    char symbol = symbols[random.Next(symbols.Length)];
-                    SetGridCharAndColor(symbol, Color, x, y);
-
-                    if ((direction == Direction.Up || direction == Direction.Down || direction == Direction.Left || direction == Direction.Right) &&
-                        ((y == 1 || y == height - 2) || (x == 1 || x == width - 2)))
+                    if (direction == Direction.West && mapElement == RoadElement && x == mapQuarter)
                     {
-                        break;
+                        int northernGuardtower = y - 1;
+                        int southernGuardtower = y + 1;
+                        SetGridCharAndColor('\u25A0', ConsoleColor.White, x, northernGuardtower);
+                        SetGridCharAndColor('\u25A0', ConsoleColor.White, x, southernGuardtower);
+                        Snake(x, southernGuardtower, Direction.South, WallElement);
+                        Snake(x, northernGuardtower, Direction.North, WallElement);
                     }
-
-                    //These are for identifying what type is being represented and connected to the right symbol and color for the map.
-                    /*if (type == "road")
+                    if (direction == Direction.West && mapElement == RoadElement && x == mapQuarter * 2)
                     {
-                        SetGridCharAndColor('#', ConsoleColor.Magenta, x, y);
-                    }*/
-                    /*else if (type == "river" && direction == "up")
-                    {
-                        if (directionModifier > 0)
-                        {
-                            SetGridCharAndColor('/', ConsoleColor.Blue, x - 1, y);
-                            SetGridCharAndColor('/', ConsoleColor.Blue, x, y);
-                            SetGridCharAndColor('/', ConsoleColor.Blue, x + 1, y);
-                        }
-                        else if (directionModifier < 0)
-                        {
-                            SetGridCharAndColor('\\', ConsoleColor.Blue, x - 1, y);
-                            SetGridCharAndColor('\\', ConsoleColor.Blue, x, y);
-                            SetGridCharAndColor('\\', ConsoleColor.Blue, x + 1, y);
-                        }
-                        else
-                        {
-                            SetGridCharAndColor('|', ConsoleColor.Blue, x - 1, y);
-                            SetGridCharAndColor('|', ConsoleColor.Blue, x, y);
-                            SetGridCharAndColor('|', ConsoleColor.Blue, x + 1, y);
-                        }
-                    }*/
-                    /*else if (type == "river" && direction == "down")
-                    {
-                        if (directionModifier < 0)
-                        {
-                            SetGridCharAndColor('/', ConsoleColor.Blue, x - 1, y);
-                            SetGridCharAndColor('/', ConsoleColor.Blue, x, y);
-                            SetGridCharAndColor('/', ConsoleColor.Blue, x + 1, y);
-                            grid[x - 3, y] = '#'; //Detailing the sideroad that always follows the river flowing down
-                            gridColor[x - 3, y] = ConsoleColor.Magenta;
-                        }
-                        else if (directionModifier > 0)
-                        {
-                            SetGridCharAndColor('\\', ConsoleColor.Blue, x - 1, y);
-                            SetGridCharAndColor('\\', ConsoleColor.Blue, x, y);
-                            SetGridCharAndColor('\\', ConsoleColor.Blue, x + 1, y);
-                            grid[x - 3, y] = '#';
-                            gridColor[x - 3, y] = ConsoleColor.Magenta;
-                        }
-                        else
-                        {
-                            SetGridCharAndColor('|', ConsoleColor.Blue, x - 1, y);
-                            SetGridCharAndColor('|', ConsoleColor.Blue, x, y);
-                            SetGridCharAndColor('|', ConsoleColor.Blue, x + 1, y);
-                            grid[x - 3, y] = '#';
-                            gridColor[x - 3, y] = ConsoleColor.Magenta;
-                        }
-                    }*/
-                    /*else if (type == "wall" && direction == "down")
-                    {*/
-                    /*if (directionModifier < 0)
-                    {
-                        SetGridCharAndColor('/', ConsoleColor.Gray, x, y);
-                        SetGridCharAndColor('/', ConsoleColor.Gray, x + 1, y);
+                        Snake(x, y + 1, Direction.North, HiddenPathElement);
                     }
-                    else if (directionModifier > 0)
+                    char symbol;
+                    if (direction == Direction.South)
                     {
-                        SetGridCharAndColor('\\', ConsoleColor.Gray, x, y);
-                        SetGridCharAndColor('\\', ConsoleColor.Gray, x + 1, y);
+                        symbol = mapElement.Symbols[mapElement.Symbols.Length - 1 - (directionModifier + 1)];
                     }
                     else
                     {
-                        SetGridCharAndColor('|', ConsoleColor.Gray, x, y);
-                        SetGridCharAndColor('|', ConsoleColor.Gray, x + 1, y);
-                    }*/
-
-                    /*//Recognise if the wall will cross the road:
-                    if (grid[x, y + 1] == '#')
-                    {
-                        // Place a square character if the next position is a road
-                        SetGridCharAndColor('■', ConsoleColor.Gray, x - 1, y);
-                        SetGridCharAndColor('■', ConsoleColor.Gray, x - 1, y + 2);
-                        SetGridCharAndColor('■', ConsoleColor.Gray, x, y);
-                        SetGridCharAndColor('■', ConsoleColor.Gray, x, y + 2);
-                        SetGridCharAndColor('■', ConsoleColor.Gray, x + 1, y);
-                        SetGridCharAndColor('■', ConsoleColor.Gray, x + 1, y + 2);
-                        y += 2;
+                        symbol = mapElement.Symbols[directionModifier + 1];
                     }
-                }*/
 
+                    int xOffSetEnd = mapElement.Width / 2;
+                    int xOffSetStart = -(mapElement.Width - 1) / 2;
+
+                    for (int xOffset = xOffSetStart; xOffset <= xOffSetEnd; xOffset++)
+                    {
+                        SetGridCharAndColor(symbol, mapElement.Color, x + xOffset, y);
+                    }
+                    if (direction == Direction.South && mapElement == RiverElement)
+                    {
+                        SetGridCharAndColor('#', ConsoleColor.Magenta, x - 4, y);
+                    }
+                    if (mapElement == HiddenPathElement && y == 5)
+                    {
+                        SetGridCharAndColor('X', ConsoleColor.Red, x, y);
+                    }
+                    //These are to make sure the snaking stops in time to not disturb the border, or go out of bounds of the grid.
+                    if (y == 1 || y == height - 2 || x == 1 || x == width - 2 || (mapElement == HiddenPathElement && y == 5))
+                    {
+                        break;
+                    }
                 }
             }
             //Prepare the forest, progressively writing less symbols to make it less dense as it moves along the x axis.
-            char[] forestSymbols = { 'T', '@', '(', ')', '!', '%', '*' };
-
             for (int y = 0; y < height; y++)
             {
                 for (int x = 1; x < mapQuarter - 1; x++)
@@ -302,9 +173,9 @@ namespace Adventure_map
                         (randomForestSymbol > 3 && x < threeQuarterQuarter && x < doubleQuarterQuarter) ||
                         (randomForestSymbol > 6 && x < mapQuarter && x < threeQuarterQuarter))
                     {
-                        int forestSymbolIndex = random.Next(forestSymbols.Length);
-                        grid[x, y] = forestSymbols[forestSymbolIndex];
-                        gridColor[x, y] = ConsoleColor.Green;
+                        int forestSymbolIndex = random.Next(ForestElement.Symbols.Length);
+                        grid[x, y] = ForestElement.Symbols[forestSymbolIndex];
+                        gridColor[x, y] = ForestElement.Color;
                     }
                 }
             }
@@ -331,38 +202,25 @@ namespace Adventure_map
                 grid[titleX + i, 1] = title[i];
                 gridColor[titleX + i, 1] = ConsoleColor.Red;
             }
-            //Road on bridge, a fixed constant:
+            //Bridge:
             for (int i = 0; i < 5; i++)
             {
                 SetGridCharAndColor('#', ConsoleColor.Magenta, bridgeStartx + i, bridgeStarty + 1);
+                SetGridCharAndColor('=', ConsoleColor.Gray, bridgeStartx + i, bridgeStarty);
+                SetGridCharAndColor('=', ConsoleColor.Gray, bridgeStartx + i, bridgeStarty + 2);
             }
             //Sideroad Startpoint:
-            SetGridCharAndColor('#', ConsoleColor.Magenta, sideRoadMarkerx, bridgeStarty + 1);
-            grid[sideRoadMarkerx, sideRoadMarkery] = '#';
-            gridColor[sideRoadMarkerx, sideRoadMarkery] = ConsoleColor.Magenta;
-            //Bridge
-            for (int y = 0; y < 5; y++)
-            {
-                grid[bridgeStartx, bridgeStarty] = '=';
-                gridColor[bridgeStartx, bridgeStarty] = ConsoleColor.Gray;
-                bridgeStartx++;
-            }
-            for (int y = 0; y < 5; y++)
-            {
-                grid[bridgeStartx - 5, bridgeStarty + 2] = '=';
-                gridColor[bridgeStartx - 5, bridgeStarty + 2] = ConsoleColor.Gray;
-                bridgeStartx++;
-            }
+            SetGridCharAndColor(RoadElement.Symbols[0], RoadElement.Color, sideRoadMarkerx, bridgeStarty + 1);
+            SetGridCharAndColor(RoadElement.Symbols[0], RoadElement.Color, sideRoadMarkerx, sideRoadMarkery);
+
             //Road going Left, snaking randomly
-            Snake(markerPointxForRoadGoingLeft, markerPointyForRoadGoingLeft, Direction.Left, RoadSymbols, RoadColor, RoadCurveChance, RoadWidth);
+            Snake(markerPointxForRoadGoingLeft, markerPointyForRoadGoingLeft, Direction.West, RoadElement);
             //Road going right, snaking randomly
-            Snake(MarkerPointxForRoadGoingRight, MarkerPointyForRoadGoingRight, Direction.Right, RoadSymbols, RoadColor, RoadCurveChance, RoadWidth);
+            Snake(MarkerPointxForRoadGoingRight, MarkerPointyForRoadGoingRight, Direction.East, RoadElement);
             //River flowing down, snaking randomly
-            Snake(markerxForRiverFlowingDown, markeryForRiverFlowingDown - 1, Direction.Down, RiverSymbols, RiverColor, RiverCurveChance, RiverWidth);
+            Snake(markerxForRiverFlowingDown, markeryForRiverFlowingDown - 1, Direction.South, RiverElement);
             //River flowing up, snaking randomly
-            Snake(markerxForRiverFlowingUp, markeryForRiverFlowingUp + 1, Direction.Up, RiverSymbols, RiverColor, RiverCurveChance, RiverWidth);
-            //Wall going down, snaking randomly
-            Snake(wallMarkerx, wallMarkery, Direction.Down, WallSymbols, WallColor, WallCurveChance, WallWidth);
+            Snake(markerxForRiverFlowingUp, markeryForRiverFlowingUp + 1, Direction.North, RiverElement);
 
             //Drawing the map to console with all of the preperation from earlier, going line by line and layer by layer
             for (int y = 0; y < height; y++)
