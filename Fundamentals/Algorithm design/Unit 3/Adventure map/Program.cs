@@ -29,12 +29,26 @@ namespace Adventure_map
             public ConsoleColor Color;
             public int Width;
             public int CurveChance;
+            public bool StraightAhead; 
+            public int StraightAheadxStart;
+            public int StraightAheadxEnd;
             public MapElement(char[] symbols, ConsoleColor color, int width, int curveChance)
             {
                 Symbols = symbols;
                 Color = color;
                 Width = width;
                 CurveChance = curveChance;
+                StraightAhead = false;
+            }
+            public MapElement(char[] symbols, ConsoleColor color, int width, int curveChance, bool straightAhead, int xStart, int xEnd)
+            {
+                Symbols = symbols;
+                Color = color;
+                Width = width;
+                CurveChance = curveChance;
+                StraightAhead = straightAhead;
+                StraightAheadxStart = xStart;
+                StraightAheadxEnd = xEnd;
             }
         }
         static MapElement WallElement = new(new char[] { '\\', '|', '/' }, ConsoleColor.Gray, 2, 10);
@@ -42,6 +56,21 @@ namespace Adventure_map
         static MapElement RoadElement = new(new char[] { '#', '#', '#' }, ConsoleColor.Magenta, 1, 6);
         static MapElement RiverElement = new(new char[] { '\\', '|', '/' }, ConsoleColor.Blue, 3, 3);
         static MapElement ForestElement = new(new char[] { 'T', '@', '(', ')', '!', '%', '*' }, ConsoleColor.Green, 1, 1);
+
+
+        //Find character location deals with identifying the y coordinate along a snaking element, for hidden path and wall.
+        static int FindCharacterYLocation(char characterToFind, char[,] grid, int x, int height)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                if (grid[x, y] == characterToFind)
+                {
+                    return y;
+                }
+            }
+            // Character not found, return a default value
+            return -1;
+        }
         //The Map method. Takes width and heigth to create a 2 dimensional grid. Static because it is intended to be a standalone method that does not operate on an instance of a class.
         static void Map(int width, int height)
         {
@@ -76,10 +105,14 @@ namespace Adventure_map
             int sideRoadMarkery = markerPointyForRoadGoingLeft + 1;
 
             int mapQuarter = width / 4;
+
+            RoadElement.StraightAhead = true;
+            RoadElement.StraightAheadxStart = mapQuarter - 1;
+            RoadElement.StraightAheadxEnd = mapQuarter + 1;
+
             int quarterQuarter = mapQuarter / 4;
             int doubleQuarterQuarter = quarterQuarter * 2;
             int threeQuarterQuarter = quarterQuarter * 3;
-
             //This method takes care of randomly snaking the various elements into a direction.
             void Snake(int x, int y, Direction direction, MapElement mapElement)
             {
@@ -90,6 +123,13 @@ namespace Adventure_map
                     if (directionModifier > 1)
                     {
                         directionModifier = 0;
+                    }
+                    if (mapElement.StraightAhead == true)
+                    {
+                        if (x >= mapElement.StraightAheadxStart && x <= mapElement.StraightAheadxEnd)
+                        {
+                            directionModifier = 0;
+                        }
                     }
                     //The direction, increasing or decreasing the x or y as needed to move the snaking along
                     switch (direction)
@@ -104,36 +144,14 @@ namespace Adventure_map
                             break;
                         case Direction.West:
                             x--;
-                            //This line is for making sure the road goes straight for a short while so it lines up nicely for the guardtowers.
-                            if (mapElement == RoadElement && x == mapQuarter + 1 || x == mapQuarter || x == mapQuarter - 1 || x == mapQuarter * 2)
-                            {
-                                directionModifier = 0;
-                            }
-                            else
-                            {
-                                y += directionModifier;
-                            }
+                            y += directionModifier;
                             break;
                         case Direction.East:
                             x++;
                             y += directionModifier;
                             break;
                     }
-                    //The road going west triggers guardtowers, which in turn become markerPoints for the wall going North and South.
-                    if (direction == Direction.West && mapElement == RoadElement && x == mapQuarter)
-                    {
-                        int northernGuardtower = y - 1;
-                        int southernGuardtower = y + 1;
-                        SetGridCharAndColor('\u25A0', ConsoleColor.White, x, northernGuardtower);
-                        SetGridCharAndColor('\u25A0', ConsoleColor.White, x, southernGuardtower);
-                        Snake(x, southernGuardtower, Direction.South, WallElement);
-                        Snake(x, northernGuardtower, Direction.North, WallElement);
-                    }
-                    //Making the map my own: I'm adding a hidden path with X marks the spot. 
-                    if (direction == Direction.West && mapElement == RoadElement && x == mapQuarter * 2)
-                    {
-                        Snake(x-1, y + 1, Direction.North, HiddenPathElement);
-                    }
+                    //An exception in the snake method. I couldn't find a neat place to put it so here it lives.
                     if (mapElement == HiddenPathElement && y == 5)
                     {
                         SetGridCharAndColor('X', ConsoleColor.Red, x, y);
@@ -151,7 +169,7 @@ namespace Adventure_map
                     }
                     //xOffset deals with storing the information in the coordinates of the wider mapElements going North and South.
                     int xOffSetEnd = mapElement.Width / 2;
-                    int xOffSetStart = -(mapElement.Width - 1) / 2;    
+                    int xOffSetStart = -(mapElement.Width - 1) / 2;
                     for (int xOffset = xOffSetStart; xOffset <= xOffSetEnd; xOffset++)
                     {
                         SetGridCharAndColor(symbol, mapElement.Color, x + xOffset, y);
@@ -162,7 +180,7 @@ namespace Adventure_map
                         SetGridCharAndColor('#', ConsoleColor.Magenta, x - 4, y);
                     }
                     //These are to make sure the snaking stops in time to not disturb the border, or go out of bounds of the grid.
-                    if (y == 1 || y == height - 2 || x == 1 || x == width - 2 )
+                    if (y == 1 || y == height - 2 || x == 1 || x == width - 2)
                     {
                         break;
                     }
@@ -218,16 +236,33 @@ namespace Adventure_map
             }
             //Sideroad Startpoint, since there's a step from the road missing until the river starts:
             SetGridCharAndColor(RoadElement.Symbols[0], RoadElement.Color, sideRoadMarkerx, sideRoadMarkery);
-
             //Road going Left, snaking randomly into a singular direction.
             Snake(markerPointxForRoadGoingLeft, markerPointyForRoadGoingLeft, Direction.West, RoadElement);
+            //Snake(x-1, y + 1, Direction.North, HiddenPathElement);
+            //Finding the y coordinate to determine where the road is from which the towers start.
+            int yCoordinate = FindCharacterYLocation('#', grid, mapQuarter, height);
+            if (yCoordinate != -1)
+            //Generating the guardtowers and snaking the wall north and south.
+            {
+                int northernGuardtower = yCoordinate - 1;
+                int southernGuardtower = yCoordinate + 1;
+                SetGridCharAndColor('\u25A0', ConsoleColor.White, mapQuarter, northernGuardtower);
+                SetGridCharAndColor('\u25A0', ConsoleColor.White, mapQuarter, southernGuardtower);
+                Snake(mapQuarter, northernGuardtower, Direction.North, WallElement);
+                Snake(mapQuarter, southernGuardtower, Direction.South, WallElement);
+            }
+            //Finding the y coordinate for Hiddenpath and subsequently generating it.
+            int yCoordinateHiddenPath = FindCharacterYLocation('#', grid, mapQuarter * 2, height);
+            if (yCoordinateHiddenPath != -1)
+            {
+                Snake(mapQuarter * 2, yCoordinateHiddenPath, Direction.North, HiddenPathElement);
+            }
             //Road going right, snaking randomly..
             Snake(MarkerPointxForRoadGoingRight, MarkerPointyForRoadGoingRight, Direction.East, RoadElement);
             //River flowing down, snaking randomly..
             Snake(markerxForRiverFlowingDown, markeryForRiverFlowingDown - 1, Direction.South, RiverElement);
             //River flowing up, snaking randomly..
             Snake(markerxForRiverFlowingUp, markeryForRiverFlowingUp + 1, Direction.North, RiverElement);
-
             //Drawing the map to console with all of the preperation from earlier, going line by line and layer by layer
             for (int y = 0; y < height; y++)
             {
