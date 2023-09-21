@@ -32,6 +32,7 @@ namespace Adventure_map
             public bool StraightAhead; 
             public int StraightAheadxStart;
             public int StraightAheadxEnd;
+            //MapElement Constructor overloading to make sure there's flexibility to use it for when a snake needs a straight part (Note the road going left)
             public MapElement(char[] symbols, ConsoleColor color, int width, int curveChance)
             {
                 Symbols = symbols;
@@ -56,8 +57,6 @@ namespace Adventure_map
         static MapElement RoadElement = new(new char[] { '#', '#', '#' }, ConsoleColor.Magenta, 1, 6);
         static MapElement RiverElement = new(new char[] { '\\', '|', '/' }, ConsoleColor.Blue, 3, 3);
         static MapElement ForestElement = new(new char[] { 'T', '@', '(', ')', '!', '%', '*' }, ConsoleColor.Green, 1, 1);
-
-
         //Find character location deals with identifying the y coordinate along a snaking element, for hidden path and wall.
         static int FindCharacterYLocation(char characterToFind, char[,] grid, int x, int height)
         {
@@ -105,14 +104,14 @@ namespace Adventure_map
             int sideRoadMarkery = markerPointyForRoadGoingLeft + 1;
 
             int mapQuarter = width / 4;
-
-            RoadElement.StraightAhead = true;
-            RoadElement.StraightAheadxStart = mapQuarter - 1;
-            RoadElement.StraightAheadxEnd = mapQuarter + 1;
-
             int quarterQuarter = mapQuarter / 4;
             int doubleQuarterQuarter = quarterQuarter * 2;
             int threeQuarterQuarter = quarterQuarter * 3;
+
+            //This is where all the coordinater go for the road going straight somewhere during the snake method:
+            RoadElement.StraightAhead = true;
+            RoadElement.StraightAheadxStart = mapQuarter - 1;
+            RoadElement.StraightAheadxEnd = mapQuarter + 1;
             //This method takes care of randomly snaking the various elements into a direction.
             void Snake(int x, int y, Direction direction, MapElement mapElement)
             {
@@ -124,6 +123,7 @@ namespace Adventure_map
                     {
                         directionModifier = 0;
                     }
+                    //Makes sure the direction modifier stays on-course (0) while the snake needs to go straight.
                     if (mapElement.StraightAhead == true)
                     {
                         if (x >= mapElement.StraightAheadxStart && x <= mapElement.StraightAheadxEnd)
@@ -238,7 +238,6 @@ namespace Adventure_map
             SetGridCharAndColor(RoadElement.Symbols[0], RoadElement.Color, sideRoadMarkerx, sideRoadMarkery);
             //Road going Left, snaking randomly into a singular direction.
             Snake(markerPointxForRoadGoingLeft, markerPointyForRoadGoingLeft, Direction.West, RoadElement);
-            //Snake(x-1, y + 1, Direction.North, HiddenPathElement);
             //Finding the y coordinate to determine where the road is from which the towers start.
             int yCoordinate = FindCharacterYLocation('#', grid, mapQuarter, height);
             if (yCoordinate != -1)
@@ -257,11 +256,11 @@ namespace Adventure_map
             {
                 Snake(mapQuarter * 2, yCoordinateHiddenPath, Direction.North, HiddenPathElement);
             }
-            //Road going right, snaking randomly..
+            //Road going right, snaking randomly into a singular direction.
             Snake(MarkerPointxForRoadGoingRight, MarkerPointyForRoadGoingRight, Direction.East, RoadElement);
-            //River flowing down, snaking randomly..
+            //River flowing down, snaking randomly into a singular direction.
             Snake(markerxForRiverFlowingDown, markeryForRiverFlowingDown - 1, Direction.South, RiverElement);
-            //River flowing up, snaking randomly..
+            //River flowing up, snaking randomly into a singular direction.
             Snake(markerxForRiverFlowingUp, markeryForRiverFlowingUp + 1, Direction.North, RiverElement);
             //Drawing the map to console with all of the preperation from earlier, going line by line and layer by layer
             for (int y = 0; y < height; y++)
