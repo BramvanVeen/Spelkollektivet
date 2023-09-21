@@ -38,7 +38,7 @@ namespace Adventure_map
             }
         }
         static MapElement WallElement = new(new char[] { '\\', '|', '/' }, ConsoleColor.Gray, 2, 10);
-        static MapElement HiddenPathElement = new(new char[] { '\\', '|', '/' }, ConsoleColor.DarkGreen, 1, 3);
+        static MapElement HiddenPathElement = new(new char[] { 'o', 'o', 'o' }, ConsoleColor.DarkGreen, 1, 3);
         static MapElement RoadElement = new(new char[] { '#', '#', '#' }, ConsoleColor.Magenta, 1, 6);
         static MapElement RiverElement = new(new char[] { '\\', '|', '/' }, ConsoleColor.Blue, 3, 3);
         static MapElement ForestElement = new(new char[] { 'T', '@', '(', ')', '!', '%', '*' }, ConsoleColor.Green, 1, 1);
@@ -80,16 +80,18 @@ namespace Adventure_map
             int doubleQuarterQuarter = quarterQuarter * 2;
             int threeQuarterQuarter = quarterQuarter * 3;
 
-            //This method takes care of randomly snaking the various elements into a singular direction.
+            //This method takes care of randomly snaking the various elements into a direction.
             void Snake(int x, int y, Direction direction, MapElement mapElement)
             {
                 while (true)
                 {
+                    //directionModifier deals with adjusting the course of the road, river or wall etc..
                     int directionModifier = random.Next(mapElement.CurveChance) - 1;
                     if (directionModifier > 1)
                     {
                         directionModifier = 0;
                     }
+                    //The direction, increasing or decreasing the x or y as needed to move the snaking along
                     switch (direction)
                     {
                         case Direction.North:
@@ -102,7 +104,8 @@ namespace Adventure_map
                             break;
                         case Direction.West:
                             x--;
-                            if (mapElement == RoadElement && x == mapQuarter + 1 || x == mapQuarter || x == mapQuarter - 1)
+                            //This line is for making sure the road goes straight for a short while so it lines up nicely for the guardtowers.
+                            if (mapElement == RoadElement && x == mapQuarter + 1 || x == mapQuarter || x == mapQuarter - 1 || x == mapQuarter * 2)
                             {
                                 directionModifier = 0;
                             }
@@ -116,6 +119,7 @@ namespace Adventure_map
                             y += directionModifier;
                             break;
                     }
+                    //The road going west triggers guardtowers, which in turn become markerPoints for the wall going North and South.
                     if (direction == Direction.West && mapElement == RoadElement && x == mapQuarter)
                     {
                         int northernGuardtower = y - 1;
@@ -125,11 +129,18 @@ namespace Adventure_map
                         Snake(x, southernGuardtower, Direction.South, WallElement);
                         Snake(x, northernGuardtower, Direction.North, WallElement);
                     }
+                    //Making the map my own: I'm adding a hidden path with X marks the spot. 
                     if (direction == Direction.West && mapElement == RoadElement && x == mapQuarter * 2)
                     {
-                        Snake(x, y + 1, Direction.North, HiddenPathElement);
+                        Snake(x-1, y + 1, Direction.North, HiddenPathElement);
+                    }
+                    if (mapElement == HiddenPathElement && y == 5)
+                    {
+                        SetGridCharAndColor('X', ConsoleColor.Red, x, y);
+                        break;
                     }
                     char symbol;
+                    //This if/else deals with the the selection of characters, which have to be mirrored depending if they go North or South.
                     if (direction == Direction.South)
                     {
                         symbol = mapElement.Symbols[mapElement.Symbols.Length - 1 - (directionModifier + 1)];
@@ -138,24 +149,20 @@ namespace Adventure_map
                     {
                         symbol = mapElement.Symbols[directionModifier + 1];
                     }
-
+                    //xOffset deals with storing the information in the coordinates of the wider mapElements going North and South.
                     int xOffSetEnd = mapElement.Width / 2;
-                    int xOffSetStart = -(mapElement.Width - 1) / 2;
-
+                    int xOffSetStart = -(mapElement.Width - 1) / 2;    
                     for (int xOffset = xOffSetStart; xOffset <= xOffSetEnd; xOffset++)
                     {
                         SetGridCharAndColor(symbol, mapElement.Color, x + xOffset, y);
                     }
+                    //This deals with the road that has to follow the river, so if south and if river a road will follow along at x-4.
                     if (direction == Direction.South && mapElement == RiverElement)
                     {
                         SetGridCharAndColor('#', ConsoleColor.Magenta, x - 4, y);
                     }
-                    if (mapElement == HiddenPathElement && y == 5)
-                    {
-                        SetGridCharAndColor('X', ConsoleColor.Red, x, y);
-                    }
                     //These are to make sure the snaking stops in time to not disturb the border, or go out of bounds of the grid.
-                    if (y == 1 || y == height - 2 || x == 1 || x == width - 2 || (mapElement == HiddenPathElement && y == 5))
+                    if (y == 1 || y == height - 2 || x == 1 || x == width - 2 )
                     {
                         break;
                     }
@@ -209,17 +216,16 @@ namespace Adventure_map
                 SetGridCharAndColor('=', ConsoleColor.Gray, bridgeStartx + i, bridgeStarty);
                 SetGridCharAndColor('=', ConsoleColor.Gray, bridgeStartx + i, bridgeStarty + 2);
             }
-            //Sideroad Startpoint:
-            SetGridCharAndColor(RoadElement.Symbols[0], RoadElement.Color, sideRoadMarkerx, bridgeStarty + 1);
+            //Sideroad Startpoint, since there's a step from the road missing until the river starts:
             SetGridCharAndColor(RoadElement.Symbols[0], RoadElement.Color, sideRoadMarkerx, sideRoadMarkery);
 
-            //Road going Left, snaking randomly
+            //Road going Left, snaking randomly into a singular direction.
             Snake(markerPointxForRoadGoingLeft, markerPointyForRoadGoingLeft, Direction.West, RoadElement);
-            //Road going right, snaking randomly
+            //Road going right, snaking randomly..
             Snake(MarkerPointxForRoadGoingRight, MarkerPointyForRoadGoingRight, Direction.East, RoadElement);
-            //River flowing down, snaking randomly
+            //River flowing down, snaking randomly..
             Snake(markerxForRiverFlowingDown, markeryForRiverFlowingDown - 1, Direction.South, RiverElement);
-            //River flowing up, snaking randomly
+            //River flowing up, snaking randomly..
             Snake(markerxForRiverFlowingUp, markeryForRiverFlowingUp + 1, Direction.North, RiverElement);
 
             //Drawing the map to console with all of the preperation from earlier, going line by line and layer by layer
