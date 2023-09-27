@@ -24,6 +24,7 @@ namespace Adventure_map
             West,
             East
         }
+        //Creating a class for the different Elements on the map:
         public class MapElement
         {
             public char[] Symbols;
@@ -53,7 +54,6 @@ namespace Adventure_map
                 StraightAheadxEnd = xEnd;
             }
         }
-
         //The different elements, with their respective symols and colors etc..
         static MapElement WallElement = new(new char[] { '\\', '|', '/', '-' }, ConsoleColor.Gray, 2, 10);
         static MapElement HiddenPathElement = new(new char[] { 'o', 'o', 'o', 'o' }, ConsoleColor.DarkGreen, 1, 3);
@@ -61,7 +61,7 @@ namespace Adventure_map
         static MapElement RiverElement = new(new char[] { '\\', '|', '/', '-' }, ConsoleColor.Blue, 3, 3);
         static MapElement ForestElement = new(new char[] { 'T', '@', '(', ')', '!', '%', '*' }, ConsoleColor.Green, 1, 1);
 
-        //Declare grid data structures (the grid will be filled with characters, so a grid of chars, and a grid detailing which color the chars should be, resulting in a kickass map.
+        //Declare grid data structures (the grid will be filled with characters, so a grid of chars, and a grid detailing which color the chars should be.
         static char[,] Grid;
         static ConsoleColor[,] GridColor;
         static int Width;
@@ -88,9 +88,9 @@ namespace Adventure_map
             return -1;
         }
 
+        //The snake method, for creating a list of coordinates for the various elements snaking randomly in a direction:
         static List<Point> Snake(int x, int y, Direction direction, MapElement mapElement)
         {
-            // is needed to create an instance of the Random class, which is used to generate random numbers in the program.
             Random random = new Random();
             List<Point> coordinates = new List<Point>();
             while (true)
@@ -129,17 +129,17 @@ namespace Adventure_map
                         y += directionModifier;
                         break;
                 }
-
                 //These are to make sure the snaking stops in time to not disturb the border, or go out of bounds of the grid.
                 if (y <= 0 || y >= Height - 1 || x <= 0 || x >= Width - 1)
                 {
                     break;
                 }
-
                 coordinates.Add(new Point(x, y));
             }
             return coordinates;
         }
+
+        //As it says on the tin, the second part of the snake method, it deals with the various elements, symbols and width:
         static void DisplaySnakeOnGrid(List<Point> snakeCoordinates, MapElement mapElement)
         {
             
@@ -154,7 +154,6 @@ namespace Adventure_map
                 {
                     symbolIndex = 1;
                 }
-
                 else {
                     Point nextCoordinate = snakeCoordinates[coordinateIndex + 1];
 
@@ -181,7 +180,6 @@ namespace Adventure_map
                 //Draw the symbol at desired width
                 int xOffSetEnd = mapElement.Width / 2;
                 int xOffSetStart = -(mapElement.Width - 1) / 2;
-
                 for (int xOffset = xOffSetStart; xOffset <= xOffSetEnd; xOffset++)
                 { 
                     SetGridCharAndColor(mapElement.Symbols[symbolIndex], mapElement.Color, coordinate.X + xOffset, coordinate.Y);
@@ -192,13 +190,11 @@ namespace Adventure_map
         //The Map method. Takes width and heigth to create a 2 dimensional grid. Static because it is intended to be a standalone method that does not operate on an instance of a class.
         static void Map(int width, int height)
         {
-            // is needed to create an instance of the Random class, which is used to generate random numbers in the program.
             Random random = new Random();
             Grid = new char[width, height];
             GridColor = new ConsoleColor[width, height];
             Width = width;
             Height = height;
-
             //Prepare the Bridge starting point and subsequent markerpoints for all other elements:
             int bridgeStartx = width * 3 / 4;
             int bridgeStarty = random.Next(height / 4, height * 3 / 4);
@@ -283,7 +279,7 @@ namespace Adventure_map
             //Sideroad Startpoint, since there's a step from the road missing until the river starts:
             SetGridCharAndColor(RoadElement.Symbols[0], RoadElement.Color, sideRoadMarkerx, sideRoadMarkery);
 
-            // Call Snake method for each map element and store the coordinates:
+            // Now we call the Snake method for each map element and store the coordinates:
             //Road going Left, snaking randomly into a singular direction.  
             var roadCoordinates = Snake(markerPointxForRoadGoingLeft, markerPointyForRoadGoingLeft, Direction.West, RoadElement);
             DisplaySnakeOnGrid(roadCoordinates, RoadElement);
@@ -301,24 +297,22 @@ namespace Adventure_map
                 var wallSouthCoordinates = Snake(mapQuarter, southernGuardtower, Direction.South, WallElement);
                 DisplaySnakeOnGrid(wallSouthCoordinates, WallElement);
             }
+
             //Finding the y coordinate for Hiddenpath and subsequently generating it.
             int yCoordinateHiddenPath = FindCharacterYLocation('#', Grid, mapQuarter * 2, height);
             if (yCoordinateHiddenPath != -1)
             {
                 // Generate hidden road all the way to the border
                 List<Point> hiddenPathCoordinates = Snake(mapQuarter * 2, yCoordinateHiddenPath, Direction.North, HiddenPathElement);
-
                 // delete the last five coordinates out of list
                 hiddenPathCoordinates = hiddenPathCoordinates.Take(hiddenPathCoordinates.Count-4).ToList();
-
                 // Tell artists to draw hideen road.
                 DisplaySnakeOnGrid(hiddenPathCoordinates, HiddenPathElement);
-
                 // X marks the spot
                 Point lastHiddenPathCoordinate = hiddenPathCoordinates.Last();
                 SetGridCharAndColor('X', ConsoleColor.Red, lastHiddenPathCoordinate.X, lastHiddenPathCoordinate.Y-1);
-
             }
+
             //Road going right, snaking randomly into a singular direction.
             var roadRightCoordinates = Snake(MarkerPointxForRoadGoingRight, MarkerPointyForRoadGoingRight, Direction.East, RoadElement);
             DisplaySnakeOnGrid(roadRightCoordinates, RoadElement);
@@ -326,16 +320,14 @@ namespace Adventure_map
             var riverDownCoordinates = Snake(markerxForRiverFlowingDown, markeryForRiverFlowingDown - 1, Direction.South, RiverElement);
             DisplaySnakeOnGrid(riverDownCoordinates, RiverElement);
 
-            //create coordinates for sideroad
+            //create coordinates for sideroad, following along the river going down:
             List<Point> roadFollowingAlongRiverCoordinates = new List<Point>(riverDownCoordinates);
-
             for (int coordinateIndex = 0; coordinateIndex < roadFollowingAlongRiverCoordinates.Count; coordinateIndex++)
             {
                 Point coordinate = roadFollowingAlongRiverCoordinates[coordinateIndex];
                 coordinate.X -= 4;
                 roadFollowingAlongRiverCoordinates[coordinateIndex] = coordinate;
             }
-
             DisplaySnakeOnGrid(roadFollowingAlongRiverCoordinates, RoadElement);
 
             //River flowing up, snaking randomly into a singular direction.
@@ -363,7 +355,6 @@ namespace Adventure_map
                 }
             }
         }
-
         public static void Main(string[] args)
         {
             //Calling the map method with sizes, first for width, second for height. 
