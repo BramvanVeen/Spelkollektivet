@@ -180,9 +180,9 @@ namespace Adventure_map
                 {
                     if (x < previousX)
                     {
-                        for (int i = 1; i < width; i++)
+                        for (int i = 0; i < width; i++)
                         {
-                            SetGridCharAndColor(mapElement.Symbols[0], mapElement.Color, x, y);
+                            SetGridCharAndColor(mapElement.Symbols[0], mapElement.Color, x-1, y);
                             x++;
                         }
                         // x decreased, so perform some action or change the symbol
