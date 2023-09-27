@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Threading.Tasks.Dataflow;
+using static Adventure_map.Program;
 
 namespace Adventure_map
 {
@@ -54,21 +55,23 @@ namespace Adventure_map
         }
 
         //The different elements, with their respective symols and colors etc..
-        static MapElement WallElement = new(new char[] { '\\', '|', '/' }, ConsoleColor.Gray, 2, 10);
-        static MapElement HiddenPathElement = new(new char[] { 'o', 'o', 'o' }, ConsoleColor.DarkGreen, 1, 3);
-        static MapElement RoadElement = new(new char[] { '#', '#', '#' }, ConsoleColor.Magenta, 1, 6);
-        static MapElement RiverElement = new(new char[] { '\\', '|', '/' }, ConsoleColor.Blue, 3, 3);
+        static MapElement WallElement = new(new char[] { '\\', '|', '/', '-' }, ConsoleColor.Gray, 2, 10);
+        static MapElement HiddenPathElement = new(new char[] { 'o', 'o', 'o', 'o' }, ConsoleColor.DarkGreen, 1, 3);
+        static MapElement RoadElement = new(new char[] { '#', '#', '#', '#' }, ConsoleColor.Magenta, 1, 6);
+        static MapElement RiverElement = new(new char[] { '\\', '|', '/', '-' }, ConsoleColor.Blue, 3, 3);
         static MapElement ForestElement = new(new char[] { 'T', '@', '(', ')', '!', '%', '*' }, ConsoleColor.Green, 1, 1);
 
         //Declare grid data structures (the grid will be filled with characters, so a grid of chars, and a grid detailing which color the chars should be, resulting in a kickass map.
-        static char[,] grid;
-        static ConsoleColor[,] gridColor;
+        static char[,] Grid;
+        static ConsoleColor[,] GridColor;
+        static int Width;
+        static int Height;
 
         //This method prepares the information to be written onto the map before we send it on to be drawn.
         static void SetGridCharAndColor(char symbol, ConsoleColor color, int x, int y)
         {
-            grid[x, y] = symbol;
-            gridColor[x, y] = color;
+            Grid[x, y] = symbol;
+            GridColor[x, y] = color;
         }
 
         //Find character location deals with identifying the y coordinate along a snaking element, for hidden path and wall.
@@ -85,7 +88,7 @@ namespace Adventure_map
             return -1;
         }
 
-        static List<Point> Snake(int x, int y, Direction direction, MapElement mapElement, int width, int height)
+        static List<Point> Snake(int x, int y, Direction direction, MapElement mapElement)
         {
             // is needed to create an instance of the Random class, which is used to generate random numbers in the program.
             Random random = new Random();
@@ -127,102 +130,62 @@ namespace Adventure_map
                         break;
                 }
 
-                //An exception in the snake method. I couldn't find a neat place to put it so here it lives.
-                if (mapElement == HiddenPathElement && y == 5)
-                {
-                    coordinates.Add(new Point(x, y));
-                    break;
-                }
-                char symbol;
-
-                //This if/else deals with the the selection of characters, which have to be mirrored depending if they go North or South.
-                if (direction == Direction.South)
-                {
-                    symbol = mapElement.Symbols[mapElement.Symbols.Length - 1 - (directionModifier + 1)];
-                }
-                else
-                {
-                    symbol = mapElement.Symbols[directionModifier + 1];
-                }
-
-                //xOffset deals with storing the information in the coordinates of the wider mapElements going North and South.
-                int xOffSetEnd = mapElement.Width / 2;
-                int xOffSetStart = -(mapElement.Width - 1) / 2;
-                for (int xOffset = xOffSetStart; xOffset <= xOffSetEnd; xOffset++)
-                {
-                    coordinates.Add(new Point(x, y));
-                }
-
-                //This deals with the road that has to follow the river, so if south and if river a road will follow along at x-4.
-                if (direction == Direction.South && mapElement == RiverElement)
-                {
-                    coordinates.Add(new Point(x, y));
-                }
-
                 //These are to make sure the snaking stops in time to not disturb the border, or go out of bounds of the grid.
-                if (y == 1 || y == height - 2 || x == 1 || x == width - 2)
+                if (y <= 0 || y >= Height - 1 || x <= 0 || x >= Width - 1)
                 {
                     break;
                 }
+
+                coordinates.Add(new Point(x, y));
             }
             return coordinates;
         }
-
-        static void DisplaySnakeOnGrid(List<Point> snakeCoordinates, MapElement mapElement, char[,] grid, ConsoleColor[,] gridColor, int width)
+        static void DisplaySnakeOnGrid(List<Point> snakeCoordinates, MapElement mapElement)
         {
-            int previousX = -1;
-            foreach (var coordinate in snakeCoordinates)
+            
+            for (int coordinateIndex = 0; coordinateIndex < snakeCoordinates.Count; coordinateIndex++)
             {
-                int x = coordinate.X;
-                int y = coordinate.Y;
+                // Determine the coordinate
+                Point coordinate = snakeCoordinates[coordinateIndex];
 
-                if (previousX != -1) // Skip the first coordinate
+                // Determine the symbol
+                int symbolIndex;
+                if (coordinateIndex == snakeCoordinates.Count - 1)
                 {
-                    if (x < previousX)
-                    {
-                        for (int i = 0; i < width; i++)
-                        {
-                            SetGridCharAndColor(mapElement.Symbols[0], mapElement.Color, x-1, y);
-                            x++;
-                        }
-                        // x decreased, so perform some action or change the symbol
-                        // Example: Change the symbol to '<' for left direction
-                    }
-                    else if (x > previousX)
-                    {
-                        for (int i = 1; i < width; i++)
-                        {
-                            SetGridCharAndColor(mapElement.Symbols[2], mapElement.Color, x, y);
-                            x++;
-                        }
+                    symbolIndex = 1;
+                }
 
+                else {
+                    Point nextCoordinate = snakeCoordinates[coordinateIndex + 1];
+
+                    int xNextStep = nextCoordinate.X;
+                    int yNextStep = nextCoordinate.Y;
+
+                    if (coordinate.X == xNextStep)
+                    {
+                        symbolIndex = 1;
+                    }
+                    else if (coordinate.Y == yNextStep)
+                    {
+                        symbolIndex = 3;
+                    }
+                    else if (yNextStep == coordinate.Y - 1 && xNextStep == coordinate.X - 1 || yNextStep == coordinate.Y + 1 && xNextStep == coordinate.X + 1)
+                    {
+                        symbolIndex = 0;
                     }
                     else
                     {
-                        for (int i = 1; i < width; i++)
-                        {
-                            SetGridCharAndColor(mapElement.Symbols[1], mapElement.Color, x, y);
-                            x++;
-                        }
+                        symbolIndex = 2;
                     }
                 }
+                //Draw the symbol at desired width
+                int xOffSetEnd = mapElement.Width / 2;
+                int xOffSetStart = -(mapElement.Width - 1) / 2;
 
-
-
-
-                /*if (x < coordinate.X)
-                {
-                    // x increased, so perform some action or change the symbol
-                    mapElement.Symbols[1] = '/';
+                for (int xOffset = xOffSetStart; xOffset <= xOffSetEnd; xOffset++)
+                { 
+                    SetGridCharAndColor(mapElement.Symbols[symbolIndex], mapElement.Color, coordinate.X + xOffset, coordinate.Y);
                 }
-                else if (x > coordinate.X)
-                {
-                    // x decreased, so perform some other action or change the symbol
-                    mapElement.Symbols[1] = '\\';
-                }
-                else 
-                {} */
-                SetGridCharAndColor(mapElement.Symbols[1], mapElement.Color, x, y);
             }
         }
 
@@ -231,8 +194,10 @@ namespace Adventure_map
         {
             // is needed to create an instance of the Random class, which is used to generate random numbers in the program.
             Random random = new Random();
-            grid = new char[width, height];
-            gridColor = new ConsoleColor[width, height];
+            Grid = new char[width, height];
+            GridColor = new ConsoleColor[width, height];
+            Width = width;
+            Height = height;
 
             //Prepare the Bridge starting point and subsequent markerpoints for all other elements:
             int bridgeStartx = width * 3 / 4;
@@ -263,11 +228,6 @@ namespace Adventure_map
             RoadElement.StraightAheadxStart = mapQuarter - 1;
             RoadElement.StraightAheadxEnd = mapQuarter + 1;
 
-            //This method takes care of producing the coordinates of snaking the various elements into a direction.
-
-
-
-
             //Prepare the forest, progressively writing less symbols to make it less dense as it moves along the x axis.
             for (int y = 0; y < height; y++)
             {
@@ -281,8 +241,8 @@ namespace Adventure_map
                         (randomForestSymbol > 6 && x < mapQuarter && x < threeQuarterQuarter))
                     {
                         int forestSymbolIndex = random.Next(ForestElement.Symbols.Length);
-                        grid[x, y] = ForestElement.Symbols[forestSymbolIndex];
-                        gridColor[x, y] = ForestElement.Color;
+                        Grid[x, y] = ForestElement.Symbols[forestSymbolIndex];
+                        GridColor[x, y] = ForestElement.Color;
                     }
                 }
             }
@@ -308,8 +268,8 @@ namespace Adventure_map
             int titleX = width / 2 - title.Length / 2;
             for (int i = 0; i < title.Length; i++)
             {
-                grid[titleX + i, 1] = title[i];
-                gridColor[titleX + i, 1] = ConsoleColor.Red;
+                Grid[titleX + i, 1] = title[i];
+                GridColor[titleX + i, 1] = ConsoleColor.Red;
             }
 
             //Bridge:
@@ -323,61 +283,78 @@ namespace Adventure_map
             //Sideroad Startpoint, since there's a step from the road missing until the river starts:
             SetGridCharAndColor(RoadElement.Symbols[0], RoadElement.Color, sideRoadMarkerx, sideRoadMarkery);
 
-            // Call Snake method for each map element and store the coordinates
+            // Call Snake method for each map element and store the coordinates:
             //Road going Left, snaking randomly into a singular direction.  
-
-            var roadCoordinates = Snake(markerPointxForRoadGoingLeft, markerPointyForRoadGoingLeft, Direction.West, RoadElement, width, height);
-            DisplaySnakeOnGrid(roadCoordinates, RoadElement, grid, gridColor, 1);
-
+            var roadCoordinates = Snake(markerPointxForRoadGoingLeft, markerPointyForRoadGoingLeft, Direction.West, RoadElement);
+            DisplaySnakeOnGrid(roadCoordinates, RoadElement);
             //Finding the y coordinate to determine where the road is from which the towers start.
-            int yCoordinate = FindCharacterYLocation('#', grid, mapQuarter, height);
+            int yCoordinate = FindCharacterYLocation('#', Grid, mapQuarter, height);
             if (yCoordinate != -1)
-
             //Generating the guardtowers and snaking the wall north and south.
             {
                 int northernGuardtower = yCoordinate - 1;
                 int southernGuardtower = yCoordinate + 1;
                 SetGridCharAndColor('\u25A0', ConsoleColor.White, mapQuarter, northernGuardtower);
                 SetGridCharAndColor('\u25A0', ConsoleColor.White, mapQuarter, southernGuardtower);
-                var wallNorthCoordinates = Snake(mapQuarter, northernGuardtower, Direction.North, WallElement, width, height);
-                DisplaySnakeOnGrid(wallNorthCoordinates, WallElement, grid, gridColor, 2);
-                var wallSouthCoordinates = Snake(mapQuarter, southernGuardtower, Direction.South, WallElement, width, height);
-                DisplaySnakeOnGrid(wallSouthCoordinates, WallElement, grid, gridColor, 2);
+                var wallNorthCoordinates = Snake(mapQuarter, northernGuardtower, Direction.North, WallElement);
+                DisplaySnakeOnGrid(wallNorthCoordinates, WallElement);
+                var wallSouthCoordinates = Snake(mapQuarter, southernGuardtower, Direction.South, WallElement);
+                DisplaySnakeOnGrid(wallSouthCoordinates, WallElement);
             }
-
             //Finding the y coordinate for Hiddenpath and subsequently generating it.
-            int yCoordinateHiddenPath = FindCharacterYLocation('#', grid, mapQuarter * 2, height);
+            int yCoordinateHiddenPath = FindCharacterYLocation('#', Grid, mapQuarter * 2, height);
             if (yCoordinateHiddenPath != -1)
             {
-                var hiddenPathCoordinates = Snake(mapQuarter * 2, yCoordinateHiddenPath, Direction.North, HiddenPathElement, width, height);
-                DisplaySnakeOnGrid(hiddenPathCoordinates, HiddenPathElement, grid, gridColor, 1);
+                // Generate hidden road all the way to the border
+                List<Point> hiddenPathCoordinates = Snake(mapQuarter * 2, yCoordinateHiddenPath, Direction.North, HiddenPathElement);
+
+                // delete the last five coordinates out of list
+                hiddenPathCoordinates = hiddenPathCoordinates.Take(hiddenPathCoordinates.Count-4).ToList();
+
+                // Tell artists to draw hideen road.
+                DisplaySnakeOnGrid(hiddenPathCoordinates, HiddenPathElement);
+
+                // X marks the spot
+                Point lastHiddenPathCoordinate = hiddenPathCoordinates.Last();
+                SetGridCharAndColor('X', ConsoleColor.Red, lastHiddenPathCoordinate.X, lastHiddenPathCoordinate.Y-1);
+
+            }
+            //Road going right, snaking randomly into a singular direction.
+            var roadRightCoordinates = Snake(MarkerPointxForRoadGoingRight, MarkerPointyForRoadGoingRight, Direction.East, RoadElement);
+            DisplaySnakeOnGrid(roadRightCoordinates, RoadElement);
+            //River flowing down, snaking randomly into a singular direction.
+            var riverDownCoordinates = Snake(markerxForRiverFlowingDown, markeryForRiverFlowingDown - 1, Direction.South, RiverElement);
+            DisplaySnakeOnGrid(riverDownCoordinates, RiverElement);
+
+            //create coordinates for sideroad
+            List<Point> roadFollowingAlongRiverCoordinates = new List<Point>(riverDownCoordinates);
+
+            for (int coordinateIndex = 0; coordinateIndex < roadFollowingAlongRiverCoordinates.Count; coordinateIndex++)
+            {
+                Point coordinate = roadFollowingAlongRiverCoordinates[coordinateIndex];
+                coordinate.X -= 4;
+                roadFollowingAlongRiverCoordinates[coordinateIndex] = coordinate;
             }
 
-            //Road going right, snaking randomly into a singular direction.
-            var roadRightCoordinates = Snake(MarkerPointxForRoadGoingRight, MarkerPointyForRoadGoingRight, Direction.East, RoadElement, width, height);
-            DisplaySnakeOnGrid(roadRightCoordinates, RoadElement, grid, gridColor, 1);
-
-            //River flowing down, snaking randomly into a singular direction.
-            var riverDownCoordinates = Snake(markerxForRiverFlowingDown, markeryForRiverFlowingDown - 1, Direction.South, RiverElement, width, height);
-            DisplaySnakeOnGrid(riverDownCoordinates, RiverElement, grid, gridColor, 3);
+            DisplaySnakeOnGrid(roadFollowingAlongRiverCoordinates, RoadElement);
 
             //River flowing up, snaking randomly into a singular direction.
-            var riverUpCoordinates = Snake(markerxForRiverFlowingUp, markeryForRiverFlowingUp + 1, Direction.North, RiverElement, width, height);
-            DisplaySnakeOnGrid(riverUpCoordinates, RiverElement, grid, gridColor, 3);
+            var riverUpCoordinates = Snake(markerxForRiverFlowingUp, markeryForRiverFlowingUp + 1, Direction.North, RiverElement);
+            DisplaySnakeOnGrid(riverUpCoordinates, RiverElement);
 
             //Drawing the map to console with all of the preperation from earlier, going line by line and layer by layer
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
-                    if (grid[x, y] == '\0')
+                    if (Grid[x, y] == '\0')
                     {
                         Console.Write(" ");
                     }
                     else
                     {
-                        Console.ForegroundColor = gridColor[x, y];
-                        Console.Write(grid[x, y]);
+                        Console.ForegroundColor = GridColor[x, y];
+                        Console.Write(Grid[x, y]);
                     }
                     if (x == width - 1)
                     {
