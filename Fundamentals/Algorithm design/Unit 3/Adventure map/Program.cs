@@ -139,7 +139,7 @@ namespace Adventure_map
             return coordinates;
         }
 
-        //As it says on the tin, the second part of the snake method, it deals with the various elements, symbols and width:
+        //This is the second part of the snake method, it deals with the various elements, symbols and width:
         static void DisplaySnakeOnGrid(List<Point> snakeCoordinates, MapElement mapElement)
         {
 
