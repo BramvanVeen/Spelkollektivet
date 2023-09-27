@@ -142,7 +142,7 @@ namespace Adventure_map
         //As it says on the tin, the second part of the snake method, it deals with the various elements, symbols and width:
         static void DisplaySnakeOnGrid(List<Point> snakeCoordinates, MapElement mapElement)
         {
-            
+
             for (int coordinateIndex = 0; coordinateIndex < snakeCoordinates.Count; coordinateIndex++)
             {
                 // Determine the coordinate
@@ -154,7 +154,8 @@ namespace Adventure_map
                 {
                     symbolIndex = 1;
                 }
-                else {
+                else
+                {
                     Point nextCoordinate = snakeCoordinates[coordinateIndex + 1];
 
                     int xNextStep = nextCoordinate.X;
@@ -181,7 +182,7 @@ namespace Adventure_map
                 int xOffSetEnd = mapElement.Width / 2;
                 int xOffSetStart = -(mapElement.Width - 1) / 2;
                 for (int xOffset = xOffSetStart; xOffset <= xOffSetEnd; xOffset++)
-                { 
+                {
                     SetGridCharAndColor(mapElement.Symbols[symbolIndex], mapElement.Color, coordinate.X + xOffset, coordinate.Y);
                 }
             }
@@ -305,12 +306,12 @@ namespace Adventure_map
                 // Generate hidden road all the way to the border
                 List<Point> hiddenPathCoordinates = Snake(mapQuarter * 2, yCoordinateHiddenPath, Direction.North, HiddenPathElement);
                 // delete the last five coordinates out of list
-                hiddenPathCoordinates = hiddenPathCoordinates.Take(hiddenPathCoordinates.Count-4).ToList();
+                hiddenPathCoordinates = hiddenPathCoordinates.Take(hiddenPathCoordinates.Count - 4).ToList();
                 // Tell artists to draw hideen road.
                 DisplaySnakeOnGrid(hiddenPathCoordinates, HiddenPathElement);
                 // X marks the spot
                 Point lastHiddenPathCoordinate = hiddenPathCoordinates.Last();
-                SetGridCharAndColor('X', ConsoleColor.Red, lastHiddenPathCoordinate.X, lastHiddenPathCoordinate.Y-1);
+                SetGridCharAndColor('X', ConsoleColor.Red, lastHiddenPathCoordinate.X, lastHiddenPathCoordinate.Y - 1);
             }
 
             //Road going right, snaking randomly into a singular direction.
