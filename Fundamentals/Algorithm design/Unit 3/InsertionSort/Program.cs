@@ -42,7 +42,7 @@ namespace InsertionSort
 
 
         { 
-            var data = new List<int>() { 1, 14, 7, 3, 12, 10, 15, 4, 2, 9, 11, 5, 8, 6, 13 };
+            var data = new List<int>() { 11, 15, 20, 21, 9, 4, 5, 8, 6, 2 };
 
             // Insertion sort
 

@@ -18,32 +18,12 @@ namespace Travel_the_World_Map
             a.Neighbors.Add(b);
             b.Neighbors.Add(a);
         }
-
-        static Location GoToLocation(Location currentLocation)
-        {
-            Console.Clear();
-            Console.WriteLine($"You have arrived at the gates of {currentLocation.Name}, {currentLocation.Description}.");
-            Console.WriteLine($"Possible destinations are:");
-
-            for (int i = 0; i < currentLocation.Neighbors.Count; i++)
-            {
-                Console.WriteLine($"-{i + 1}.  {currentLocation.Neighbors[i].Name}");
-            }
-
-            Console.WriteLine();
-            Console.WriteLine($"Where would you like to travel?");
-            string playerInput = Console.ReadLine();
-            int neighborIndex = Int32.Parse(playerInput) - 1;
-
-            Location selectedNeighbor = currentLocation.Neighbors[neighborIndex];
-
-            return selectedNeighbor;
-        }
+ 
         static void Main(string[] args)
         {
-            var locations = new List<Location>();
+            List<Location> locations = new List<Location>();
 
-            var pyke = new Location
+            Location pyke = new Location
             {
                 Name = "Pyke",
                 Description = "the stronghold and seat of House Greyjoy",
@@ -51,7 +31,7 @@ namespace Travel_the_World_Map
             };
             locations.Add(pyke);
 
-            var riverrun = new Location
+            Location riverrun = new Location
             {
                 Name = "Riverrun",
                 Description = "a large castle located in the central-western part of the Riverlands",
@@ -59,7 +39,7 @@ namespace Travel_the_World_Map
             };
             locations.Add(riverrun);
 
-            var winterfell = new Location
+            Location winterfell = new Location
             {
                 Name = "Winterfell",
                 Description = "the capital of the Kingdom of the North",
@@ -67,7 +47,7 @@ namespace Travel_the_World_Map
             };
             locations.Add(winterfell);
 
-            var theTrident = new Location
+            Location theTrident = new Location
             {
                 Name = "The Trident",
                 Description = "one of the largest and most well-known rivers on the continent of Westeros",
@@ -75,7 +55,7 @@ namespace Travel_the_World_Map
             };
             locations.Add(theTrident);
 
-            var kingsLanding = new Location
+            Location kingsLanding = new Location
             {
                 Name = "King's Landing",
                 Description = "the capital, and largest city, of the Seven Kingdoms",
@@ -83,7 +63,7 @@ namespace Travel_the_World_Map
             };
             locations.Add(kingsLanding);
 
-            var highgarden = new Location
+            Location highgarden = new Location
             {
                 Name = "Highgarden",
                 Description = "the seat of House Tyrell and the regional capital of the Reach",
@@ -101,25 +81,33 @@ namespace Travel_the_World_Map
             ConnectLocations(kingsLanding, highgarden);
             ConnectLocations(highgarden, riverrun);
 
-            var currentLocation = locations[5];
+            Location currentLocation = locations[5];
 
-            //Write a welcome message to the player, stating both the name and description of the current location.
+            bool continueTravel = true;
 
-            Console.Write($"State your name: "); var playerName = Console.ReadLine();
-            Console.WriteLine();
-            Console.WriteLine($"Welcome, {playerName}. You have arrived at the gates of {currentLocation.Name}, {currentLocation.Description}.");
-            Console.WriteLine($"Possible destinations are:");
-            for (int i = 0; i < currentLocation.Neighbors.Count; i++)
+            while (continueTravel)
             {
-                Console.WriteLine($"-{i + 1}.  {currentLocation.Neighbors[i].Name}");
+                Console.WriteLine($"You are currently in: {currentLocation.Name}, {currentLocation.Description}\n");
+                Console.WriteLine($"Your possible destinations are:\n");
+
+                for (int i = 0; i < currentLocation.Neighbors.Count; i++)
+                {
+                    Console.WriteLine($"{i + 1}. {currentLocation.Neighbors[i].Name}");
+                }
+                Console.WriteLine();
+                Console.WriteLine($"Where do you wish to travel? (Type number and press enter..");
+                int chosenDestination = Convert.ToInt32(Console.ReadLine()) - 1;
+
+                if (chosenDestination >= 0 && chosenDestination < currentLocation.Neighbors.Count)
+                {
+                    currentLocation = currentLocation.Neighbors[chosenDestination];
+                    Console.Clear();
+                }
+                else
+                {
+                    Console.WriteLine("Invalid choice. Please select a valid destination.");
+                }
             }
-
-            Console.WriteLine();
-            Console.WriteLine($"Where would you like to travel?");
-            string playerInput = Console.ReadLine();
-            int neighborIndex = Int32.Parse(playerInput) - 1;
-
-
         }
     }
 }
