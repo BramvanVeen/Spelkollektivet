@@ -26,6 +26,7 @@ public class Game
     };
     private bool beatLevel1 = false;
     private bool winning = false;
+    private bool losing = false;
     private int currentLevel = 1; // Initialize the current level to 1
     public Game()
     {
@@ -93,7 +94,6 @@ public class Game
             {
                 char cell = map[x, y];
                 SetConsoleColorForSymbol(cell);
-
                 if (winning == true && y < 3)
                 {
                     Console.ForegroundColor = ConsoleColor.Cyan;
@@ -183,10 +183,9 @@ public class Game
             Gasoline = initialGasoline;
             RemainingSteps = initialRemainingSteps;
             Position = new Point(game.map.GetLength(0) / 2, game.map.GetLength(1) / 2);
-            Symbol = '☺'; // Change this symbol later
+            Symbol = '☺';
             this.game = game; // Store a reference to the Game instance
         }
-        // Add player-related methods here
         public void MovePlayer(ConsoleKey key)
         {
             int targetX = Position.X;
@@ -207,7 +206,6 @@ public class Game
                     targetX++;
                     break;
                 default:
-                    // Handle other keys or invalid input
                     break;
             }
             // Check if the target position is within the bounds of the map
@@ -468,7 +466,6 @@ public class Game
             {
                 // Player has enough gas to defeat the opponent
                 player.Gasoline -= opponent.Health;
-                opponent.IncreaseHealth(1); // Increase opponent's health by 1
                 player.Health -= 1; // Decrease player's health by 1
 
                 // Check if the opponent's health is now 5 or more
@@ -478,7 +475,6 @@ public class Game
                     Console.WriteLine("Congratulations! You won!");
                     winning = true;
                     DrawMap();
-                    increaseLevel(); // Increase the level by 1
                     return; // Exit the method, indicating victory
                 }
                 else
@@ -492,6 +488,7 @@ public class Game
             {
                 Console.Clear(); // Clear the console before displaying the losing message
                 Console.WriteLine("Game over! You lost."); // Player loses
+                losing = true;
                 DrawMap();
                 return; // Exit the method, indicating loss
             }
@@ -511,6 +508,7 @@ public class Game
             Console.WriteLine($"Health bar: ({player.Health}) | Gas bar: ({player.Gasoline}) | Remaining Steps: {player.RemainingSteps}");
             Console.WriteLine($"Current Level: ({currentLevel}) | Opponent health: {opponent.Health}");
             Console.WriteLine("Player's turn: Use arrow keys to move.");
+            // Iterate through each step
             for (int step = 0; step < 5; step++)
             {
                 // Read the player's input
@@ -522,6 +520,23 @@ public class Game
                 {
                     HandleCollision(player, opponent);
                 }
+                // Check for winning or losing conditions after each step
+                if (winning)
+                {
+                    Console.Clear();
+                    Console.WriteLine("The crowd goes wild! Magnificent bastard!!!");
+                    DrawMap();
+                    increaseLevel(); // Increase the level by 1
+                    return; // Exit the game loop
+                }
+                // Check for losing condition
+                if (losing)
+                {
+                    Console.Clear();
+                    Console.WriteLine("You bite the dust...");
+                    DrawMap();
+                    return; // Exit the game loop
+                }
                 // Clear the console and update the map after each move
                 Console.Clear();
                 UpdateMap();
@@ -529,19 +544,39 @@ public class Game
                 Console.WriteLine($"Health bar: ({player.Health}) | Gas bar: ({player.Gasoline}) | Remaining Steps: {player.RemainingSteps}");
                 Console.WriteLine($"Current Level: ({currentLevel}) | Opponent health: {opponent.Health}");
                 Console.WriteLine("Player's turn: Use arrow keys to move.");
-            }
+            }   
             // Opponent's turn
             opponent.RemainingMoves = 3; // Reset opponent's moves to 3 at the beginning of their turn
             Console.WriteLine("Opponent's turn:");
+
             // Move the opponent three steps
             for (int i = 0; i < 3; i++)
             {
                 opponent.MoveOpponent(player.Position, map); // Call the opponent's movement logic
-                // Check if the player and opponent occupy the same square after opponent's move
+                                                             // Check if the player and opponent occupy the same square after opponent's move
                 if (player.Position == opponent.Position)
                 {
                     HandleCollision(player, opponent);
                 }
+
+                // Check for winning or losing conditions after each opponent's turn
+                if (winning)
+                {
+                    Console.Clear();
+                    Console.WriteLine("The crowd goes wild! Magnificent bastard!!!");
+                    DrawMap();
+                    increaseLevel(); // Increase the level by 1
+                    return; // Exit the game loop
+                }
+                // Check for losing condition
+                if (losing)
+                {
+                    Console.Clear();
+                    Console.WriteLine("They chainsaw'd your body, life and ego... sadness.");
+                    DrawMap();
+                    return; // Exit the game loop
+                }
+
                 // Clear the console and update the map after each opponent move
                 Console.Clear();
                 UpdateMap();
@@ -555,8 +590,8 @@ public class Game
     public static void Main(string[] args)
     {
         Console.OutputEncoding = System.Text.Encoding.UTF8;
-        Console.WriteLine("Step up, brave gladiator.");
-        Console.Write("State your name and prepare to be judged! (and press Enter to continue: ");
+        Console.WriteLine("Step up Scumbag.");
+        Console.Write("State your name and prepare to be thrown to the lions for the amusement of the crowd. (and press Enter to continue: ");
         Console.WriteLine();
         Console.WriteLine();
         // Read the player's name from the console input
