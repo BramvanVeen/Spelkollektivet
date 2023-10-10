@@ -544,7 +544,7 @@ public class Game
                 Console.WriteLine($"Health bar: ({player.Health}) | Gas bar: ({player.Gasoline}) | Remaining Steps: {player.RemainingSteps}");
                 Console.WriteLine($"Current Level: ({currentLevel}) | Opponent health: {opponent.Health}");
                 Console.WriteLine("Player's turn: Use arrow keys to move.");
-            }   
+            }
             // Opponent's turn
             opponent.RemainingMoves = 3; // Reset opponent's moves to 3 at the beginning of their turn
             Console.WriteLine("Opponent's turn:");
@@ -591,7 +591,7 @@ public class Game
     {
         Console.OutputEncoding = System.Text.Encoding.UTF8;
         Console.WriteLine("Step up Scumbag.");
-        Console.Write("State your name and prepare to be thrown to the lions for the amusement of the crowd. (and press Enter to continue: ");
+        Console.Write("State your name and prepare to be thrown to the lions for the amusement of the crowd. (and press Enter to continue: )");
         Console.WriteLine();
         Console.WriteLine();
         // Read the player's name from the console input
