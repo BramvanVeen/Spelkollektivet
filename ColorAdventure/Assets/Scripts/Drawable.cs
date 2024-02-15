@@ -98,8 +98,6 @@ namespace FreeDraw
         // Pass in a point in WORLD coordinates
         // Changes the surrounding pixels of the world_point to the static pen_colour
 
-
-         //I'M HIDING THIS METHOD BUT DONT WANT TO DELETE IT YET-BRAM
         public void PenBrush(Vector2 world_point)
         {
             Vector2 pixel_pos = WorldToPixelCoordinates(world_point);
@@ -121,51 +119,6 @@ namespace FreeDraw
             //Debug.Log("Dimensions: " + pixelWidth + "," + pixelHeight + ". Units to pixels: " + unitsToPixels + ". Pixel pos: " + pixel_pos);
             previous_drag_position = pixel_pos;
         }
-
-        //REPLACING IT WITH THIS: -BRAM
-
-        /*public void PenBrush(Vector2 world_point)
-        {
-            Vector2 pixel_pos = WorldToPixelCoordinates(world_point);
-
-            cur_colors = drawable_texture.GetPixels32();
-
-            if (previous_drag_position == Vector2.zero)
-            {
-                // If this is the first time we've ever dragged on this image, simply color the pixels at our mouse position
-                MarkPixelsToColour(pixel_pos, Pen_Width, PaletteColor.SelectedColor);
-            }
-            else
-            {
-                // Color in a line from where we were on the last update call
-                ColourBetween(previous_drag_position, pixel_pos, Pen_Width, PaletteColor.SelectedColor);
-            }
-            ApplyMarkedPixelChanges();
-
-            previous_drag_position = pixel_pos;
-        }
-
-        public void SelectedColorBrush(Vector2 world_point)
-        {
-            Vector2 pixel_pos = WorldToPixelCoordinates(world_point);
-
-            cur_colors = drawable_texture.GetPixels32();
-
-            if (previous_drag_position == Vector2.zero)
-            {
-                // If this is the first time we've ever dragged on this image, simply colour the pixels at our mouse position
-                MarkPixelsToColour(pixel_pos, Pen_Width, PaletteColor.SelectedColor);
-            }
-            else
-            {
-                // Colour in a line from where we were on the last update call
-                ColourBetween(previous_drag_position, pixel_pos, Pen_Width, PaletteColor.SelectedColor);
-            }
-            ApplyMarkedPixelChanges();
-
-            previous_drag_position = pixel_pos;
-        }*/
-
 
         // Helper method used by UI to set what brush the user wants
         // Create a new one for any new brushes you implement
@@ -220,22 +173,10 @@ namespace FreeDraw
                 no_drawing_on_current_drag = false;
             }
             mouse_was_previously_held_down = mouse_held_down;
-
-
-            /*//MORE BRAM CHANGES HERE:
-            if (current_brush == PenBrush && PaletteColor.SelectedColor != Color.clear)
-            {
-                current_brush = SelectedColorBrush;
-            }
-
-            if (current_brush == PenBrush && PaletteColor.SelectedColor != Color.clear)
-            {
-                current_brush = PenBrush;
-            }*/
         }
 
 
-
+        
         // Set the colour of pixels in a straight line from start_point all the way to end_point, to ensure everything inbetween is coloured
         public void ColourBetween(Vector2 start_point, Vector2 end_point, int width, Color color)
         {
@@ -264,7 +205,6 @@ namespace FreeDraw
             // Figure out how many pixels we need to colour in each direction (x and y)
             int center_x = (int)center_pixel.x;
             int center_y = (int)center_pixel.y;
-            //int extra_radius = Mathf.Min(0, pen_thickness - 2);
 
             for (int x = center_x - pen_thickness; x <= center_x + pen_thickness; x++)
             {
@@ -274,10 +214,30 @@ namespace FreeDraw
 
                 for (int y = center_y - pen_thickness; y <= center_y + pen_thickness; y++)
                 {
-                    MarkPixelToChange(x, y, color_of_pen);
+                    // Check if the Y wraps around the image
+                    if (y >= (int)drawable_sprite.rect.height || y < 0)
+                        continue;
+
+                    // Check if the pixel is within the circular brush area
+                    if (IsWithinCircularBrush(x, y, center_x, center_y, pen_thickness))
+                    {
+                        MarkPixelToChange(x, y, color_of_pen);
+                    }
                 }
             }
+
         }
+
+        private bool IsWithinCircularBrush(int x, int y, int center_x, int center_y, int pen_thickness)
+        {
+            int dx = x - center_x;
+            int dy = y - center_y;
+            int squaredDistance = dx * dx + dy * dy;
+            int squaredRadius = pen_thickness * pen_thickness;
+            return squaredDistance <= squaredRadius;
+        }
+
+
         public void MarkPixelToChange(int x, int y, Color color)
         {
             // Need to transform x and y coordinates to flat coordinates of array
