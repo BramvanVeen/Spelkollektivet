@@ -15,7 +15,7 @@ namespace FreeDraw
         // PEN COLOUR
         public static Color Pen_Colour = Color.red;     // Change these to change the default drawing settings
         // PEN WIDTH (actually, it's a radius, in pixels)
-        public static int Pen_Width = 3;
+        public static int Pen_Width = 50;
 
 
         public delegate void Brush_Function(Vector2 world_position);
@@ -28,7 +28,7 @@ namespace FreeDraw
 
         public bool Reset_Canvas_On_Play = true;
         // The colour the canvas is reset to each time
-        public Color Reset_Colour = new Color(0, 0, 0, 0);  // By default, reset the canvas to be transparent
+        public Sprite OriginalSprite;
 
         // Used to reference THIS specific file without making all methods static
         public static Drawable drawable;
@@ -93,10 +93,13 @@ namespace FreeDraw
 
 
 
-        
+
         // Default brush type. Has width and colour.
         // Pass in a point in WORLD coordinates
         // Changes the surrounding pixels of the world_point to the static pen_colour
+
+
+         //I'M HIDING THIS METHOD BUT DONT WANT TO DELETE IT YET-BRAM
         public void PenBrush(Vector2 world_point)
         {
             Vector2 pixel_pos = WorldToPixelCoordinates(world_point);
@@ -118,6 +121,50 @@ namespace FreeDraw
             //Debug.Log("Dimensions: " + pixelWidth + "," + pixelHeight + ". Units to pixels: " + unitsToPixels + ". Pixel pos: " + pixel_pos);
             previous_drag_position = pixel_pos;
         }
+
+        //REPLACING IT WITH THIS: -BRAM
+
+        /*public void PenBrush(Vector2 world_point)
+        {
+            Vector2 pixel_pos = WorldToPixelCoordinates(world_point);
+
+            cur_colors = drawable_texture.GetPixels32();
+
+            if (previous_drag_position == Vector2.zero)
+            {
+                // If this is the first time we've ever dragged on this image, simply color the pixels at our mouse position
+                MarkPixelsToColour(pixel_pos, Pen_Width, PaletteColor.SelectedColor);
+            }
+            else
+            {
+                // Color in a line from where we were on the last update call
+                ColourBetween(previous_drag_position, pixel_pos, Pen_Width, PaletteColor.SelectedColor);
+            }
+            ApplyMarkedPixelChanges();
+
+            previous_drag_position = pixel_pos;
+        }
+
+        public void SelectedColorBrush(Vector2 world_point)
+        {
+            Vector2 pixel_pos = WorldToPixelCoordinates(world_point);
+
+            cur_colors = drawable_texture.GetPixels32();
+
+            if (previous_drag_position == Vector2.zero)
+            {
+                // If this is the first time we've ever dragged on this image, simply colour the pixels at our mouse position
+                MarkPixelsToColour(pixel_pos, Pen_Width, PaletteColor.SelectedColor);
+            }
+            else
+            {
+                // Colour in a line from where we were on the last update call
+                ColourBetween(previous_drag_position, pixel_pos, Pen_Width, PaletteColor.SelectedColor);
+            }
+            ApplyMarkedPixelChanges();
+
+            previous_drag_position = pixel_pos;
+        }*/
 
 
         // Helper method used by UI to set what brush the user wants
@@ -173,6 +220,18 @@ namespace FreeDraw
                 no_drawing_on_current_drag = false;
             }
             mouse_was_previously_held_down = mouse_held_down;
+
+
+            /*//MORE BRAM CHANGES HERE:
+            if (current_brush == PenBrush && PaletteColor.SelectedColor != Color.clear)
+            {
+                current_brush = SelectedColorBrush;
+            }
+
+            if (current_brush == PenBrush && PaletteColor.SelectedColor != Color.clear)
+            {
+                current_brush = PenBrush;
+            }*/
         }
 
 
@@ -301,10 +360,15 @@ namespace FreeDraw
             drawable_sprite = this.GetComponent<SpriteRenderer>().sprite;
             drawable_texture = drawable_sprite.texture;
 
+
+
             // Initialize clean pixels to use
             clean_colours_array = new Color[(int)drawable_sprite.rect.width * (int)drawable_sprite.rect.height];
-            for (int x = 0; x < clean_colours_array.Length; x++)
-                clean_colours_array[x] = Reset_Colour;
+
+            Color[] originalcolors = OriginalSprite.texture.GetPixels();
+
+            for (int i = 0; i < clean_colours_array.Length; i++)
+                clean_colours_array[i] = originalcolors[i];
 
             // Should we reset our canvas image when we hit play in the editor?
             if (Reset_Canvas_On_Play)
