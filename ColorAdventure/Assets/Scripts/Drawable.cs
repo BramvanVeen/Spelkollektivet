@@ -12,6 +12,11 @@ namespace FreeDraw
     // 4. Hold down left mouse to draw on this texture!
     public class Drawable : MonoBehaviour
     {
+        public void DisableDrawing()
+        {
+                current_brush = null;       
+        }
+
         // PEN COLOUR
         public static Color Pen_Colour = Color.red;     // Change these to change the default drawing settings
         // PEN WIDTH (actually, it's a radius, in pixels)
@@ -138,42 +143,46 @@ namespace FreeDraw
         // Detects when user is left clicking, which then call the appropriate function
         void Update()
         {
-            // Is the user holding down the left mouse button?
-            bool mouse_held_down = Input.GetMouseButton(0);
-            if (mouse_held_down && !no_drawing_on_current_drag)
+            if (current_brush != null) 
             {
-                // Convert mouse coordinates to world coordinates
-                Vector2 mouse_world_position = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-
-                // Check if the current mouse position overlaps our image
-                Collider2D hit = Physics2D.OverlapPoint(mouse_world_position, Drawing_Layers.value);
-                if (hit != null && hit.transform != null)
+                // Is the user holding down the left mouse button?
+                bool mouse_held_down = Input.GetMouseButton(0);
+                if (mouse_held_down && !no_drawing_on_current_drag)
                 {
-                    // We're over the texture we're drawing on!
-                    // Use whatever function the current brush is
-                    current_brush(mouse_world_position);
-                }
+                    // Convert mouse coordinates to world coordinates
+                    Vector2 mouse_world_position = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
-                else
-                {
-                    // We're not over our destination texture
-                    previous_drag_position = Vector2.zero;
-                    if (!mouse_was_previously_held_down)
+                    // Check if the current mouse position overlaps our image
+                    Collider2D hit = Physics2D.OverlapPoint(mouse_world_position, Drawing_Layers.value);
+                    if (hit != null && hit.transform != null)
                     {
-                        // This is a new drag where the user is left clicking off the canvas
-                        // Ensure no drawing happens until a new drag is started
-                        no_drawing_on_current_drag = true;
+                        // We're over the texture we're drawing on!
+                        // Use whatever function the current brush is
+                        current_brush(mouse_world_position);
+                    }
+
+                    else
+                    {
+                        // We're not over our destination texture
+                        previous_drag_position = Vector2.zero;
+                        if (!mouse_was_previously_held_down)
+                        {
+                            // This is a new drag where the user is left clicking off the canvas
+                            // Ensure no drawing happens until a new drag is started
+                            no_drawing_on_current_drag = true;
+                        }
                     }
                 }
+                // Mouse is released
+                else if (!mouse_held_down)
+                {
+                    previous_drag_position = Vector2.zero;
+                    no_drawing_on_current_drag = false;
+                }
+                mouse_was_previously_held_down = mouse_held_down;
             }
-            // Mouse is released
-            else if (!mouse_held_down)
-            {
-                previous_drag_position = Vector2.zero;
-                no_drawing_on_current_drag = false;
-            }
-            mouse_was_previously_held_down = mouse_held_down;
         }
+            
 
 
         
@@ -182,13 +191,14 @@ namespace FreeDraw
         {
             // Get the distance from start to finish
             float distance = Vector2.Distance(start_point, end_point);
+
             Vector2 direction = (start_point - end_point).normalized;
 
             Vector2 cur_position = start_point;
 
             // Calculate how many times we should interpolate between start_point and end_point based on the amount of time that has passed since the last update
-            float lerp_steps = 1 / distance;
-
+            float lerp_steps = width / (2*distance);
+            
             for (float lerp = 0; lerp <= 1; lerp += lerp_steps)
             {
                 cur_position = Vector2.Lerp(start_point, end_point, lerp);
